@@ -9,5 +9,6 @@ public record PhotoResponse(
         String filename,
         String mimeType,
         Integer fileSize,
+        String viewUrl,
         LocalDateTime createdAt) {
 }

@@ -56,6 +56,7 @@ export function mapPhoto(photo) {
     filename: photo.filename,
     mimeType: photo.mime_type,
     fileSize: photo.file_size,
+    viewUrl: photo.view_url,
     createdAt: photo.created_at,
   }
 }

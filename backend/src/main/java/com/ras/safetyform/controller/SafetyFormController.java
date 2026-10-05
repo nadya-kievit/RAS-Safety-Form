@@ -1,10 +1,12 @@
 package com.ras.safetyform.controller;
 
-import com.ras.safetyform.dto.PhotoCreateRequest;
 import com.ras.safetyform.dto.PhotoResponse;
 import com.ras.safetyform.dto.SafetyFormCreateRequest;
 import com.ras.safetyform.dto.SafetyFormResponse;
+import com.ras.safetyform.service.AuthenticationException;
 import com.ras.safetyform.service.SafetyFormService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/safety-forms")
@@ -54,16 +57,30 @@ public class SafetyFormController {
         return safetyFormService.getForms(siteId, userId, startDate, endDate);
     }
 
-    @PostMapping("/{formId}/photos")
+    @PostMapping("/{formId}/photos/upload")
     @ResponseStatus(HttpStatus.CREATED)
-    public PhotoResponse createPhotoMetadata(
+    public List<PhotoResponse> uploadPhotos(
             @PathVariable Integer formId,
-            @Valid @RequestBody PhotoCreateRequest request) {
-        return safetyFormService.createPhoto(formId, request);
+            @RequestParam("photos") List<MultipartFile> photos,
+            HttpServletRequest request) {
+        return safetyFormService.uploadPhotos(formId, requireUserId(request), photos);
     }
 
     @GetMapping("/{formId}/photos")
-    public List<PhotoResponse> getPhotos(@PathVariable Integer formId) {
-        return safetyFormService.getPhotos(formId);
+    public List<PhotoResponse> getPhotos(
+            @PathVariable Integer formId,
+            HttpServletRequest request) {
+        return safetyFormService.getPhotos(formId, requireUserId(request));
+    }
+
+    private Integer requireUserId(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        Object userId = session == null
+                ? null
+                : session.getAttribute(AuthController.USER_ID_SESSION_ATTRIBUTE);
+        if (!(userId instanceof Integer authenticatedUserId)) {
+            throw new AuthenticationException("Authentication required");
+        }
+        return authenticatedUserId;
     }
 }

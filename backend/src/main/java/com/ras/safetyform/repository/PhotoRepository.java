@@ -6,5 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PhotoRepository extends JpaRepository<Photo, Integer> {
 
+    long countBySafetyForm_Id(Integer formId);
+
     List<Photo> findBySafetyForm_IdOrderByCreatedAtAscIdAsc(Integer formId);
 }

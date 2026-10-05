@@ -5,6 +5,7 @@ import com.ras.safetyform.service.AuthenticationException;
 import com.ras.safetyform.service.AuthorizationException;
 import com.ras.safetyform.service.InvalidRequestException;
 import com.ras.safetyform.service.ResourceNotFoundException;
+import com.ras.safetyform.service.StorageException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -47,6 +49,28 @@ public class GlobalExceptionHandler {
             InvalidRequestException exception,
             HttpServletRequest request) {
         return error(HttpStatus.BAD_REQUEST, exception.getMessage(), request, Map.of());
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiError> handleUploadTooLarge(
+            MaxUploadSizeExceededException exception,
+            HttpServletRequest request) {
+        return error(
+                HttpStatus.PAYLOAD_TOO_LARGE,
+                "The selected photos exceed the upload size limit",
+                request,
+                Map.of());
+    }
+
+    @ExceptionHandler(StorageException.class)
+    public ResponseEntity<ApiError> handleStorage(
+            StorageException exception,
+            HttpServletRequest request) {
+        return error(
+                HttpStatus.BAD_GATEWAY,
+                exception.getMessage(),
+                request,
+                Map.of());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

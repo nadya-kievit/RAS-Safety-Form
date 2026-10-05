@@ -4,10 +4,6 @@ import { useAuth } from '../context/auth.js'
 import { getSubmissionDetail } from '../services/submissionService.js'
 import { formatDate, formatDateTime } from '../utils/date.js'
 
-function isPublicImageUrl(path) {
-  return /^https?:\/\//i.test(path || '')
-}
-
 function SubmissionDetailPage() {
   const { submissionId } = useParams()
   const { user } = useAuth()
@@ -72,9 +68,6 @@ function SubmissionDetailPage() {
 
       <section className="panel">
         <h2>Safety checklist</h2>
-        <p className="message notice">
-          The backend currently returns the site checklist but does not store confirmations for an individual submission.
-        </p>
         <ul>
           {submission.checklist.items.map((item) => <li key={item.id}>{item.item}</li>)}
         </ul>
@@ -88,9 +81,7 @@ function SubmissionDetailPage() {
           <div className="photo-list">
             {submission.photos.map((photo) => (
               <figure key={photo.id}>
-                {isPublicImageUrl(photo.storagePath) && (
-                  <img src={photo.storagePath} alt={photo.filename} />
-                )}
+                <img src={photo.viewUrl} alt={photo.filename} />
                 <figcaption>{photo.filename}</figcaption>
               </figure>
             ))}
