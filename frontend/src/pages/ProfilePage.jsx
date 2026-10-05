@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/auth.js'
 import { changePassword } from '../services/authService.js'
 
@@ -13,7 +14,8 @@ function displayRole(role) {
 }
 
 function ProfilePage() {
-  const { user, updateProfile } = useAuth()
+  const { user, updateProfile, logout } = useAuth()
+  const navigate = useNavigate()
   const [isEditing, setIsEditing] = useState(false)
   const [profile, setProfile] = useState({
     username: user.username,
@@ -93,10 +95,18 @@ function ProfilePage() {
     }
   }
 
+  async function handleLogout() {
+    try {
+      await logout()
+    } finally {
+      navigate('/login', { replace: true })
+    }
+  }
+
   return (
-    <section className="profile-page">
+    <section className="content-page profile-page">
       <div className="page-heading">
-        <h1>Profile</h1>
+        <h1>My Account</h1>
         {!isEditing && (
           <button type="button" onClick={startEditing}>Edit profile</button>
         )}
@@ -118,42 +128,44 @@ function ProfilePage() {
           <h2>Edit profile information</h2>
           {profileError && <p className="message error" role="alert">{profileError}</p>}
 
-          <div className="field-group">
-            <label htmlFor="profile-username">Username</label>
-            <input
-              id="profile-username"
-              name="username"
-              value={profile.username}
-              onChange={updateProfileField}
-              maxLength="100"
-              required
-            />
-          </div>
-          <div className="field-group">
-            <label htmlFor="profile-first-name">First name</label>
-            <input
-              id="profile-first-name"
-              name="firstName"
-              value={profile.firstName}
-              onChange={updateProfileField}
-              maxLength="100"
-              required
-            />
-          </div>
-          <div className="field-group">
-            <label htmlFor="profile-last-name">Last name</label>
-            <input
-              id="profile-last-name"
-              name="lastName"
-              value={profile.lastName}
-              onChange={updateProfileField}
-              maxLength="100"
-              required
-            />
-          </div>
-          <div className="field-group">
-            <label htmlFor="profile-role">Role</label>
-            <input id="profile-role" value={displayRole(user.role)} disabled />
+          <div className="profile-fields-grid">
+            <div className="field-group">
+              <label htmlFor="profile-first-name">First name</label>
+              <input
+                id="profile-first-name"
+                name="firstName"
+                value={profile.firstName}
+                onChange={updateProfileField}
+                maxLength="100"
+                required
+              />
+            </div>
+            <div className="field-group">
+              <label htmlFor="profile-last-name">Last name</label>
+              <input
+                id="profile-last-name"
+                name="lastName"
+                value={profile.lastName}
+                onChange={updateProfileField}
+                maxLength="100"
+                required
+              />
+            </div>
+            <div className="field-group">
+              <label htmlFor="profile-username">Username</label>
+              <input
+                id="profile-username"
+                name="username"
+                value={profile.username}
+                onChange={updateProfileField}
+                maxLength="100"
+                required
+              />
+            </div>
+            <div className="field-group">
+              <label htmlFor="profile-role">Role</label>
+              <input id="profile-role" value={displayRole(user.role)} disabled />
+            </div>
           </div>
 
           <div className="form-actions">
@@ -218,6 +230,14 @@ function ProfilePage() {
           </button>
         </div>
       </form>
+
+      <section className="panel profile-logout" aria-labelledby="logout-heading">
+        <div>
+          <h2 id="logout-heading">Sign out</h2>
+          <p>Sign out of your RAS Safety Forms account.</p>
+        </div>
+        <button type="button" onClick={handleLogout}>Logout</button>
+      </section>
     </section>
   )
 }

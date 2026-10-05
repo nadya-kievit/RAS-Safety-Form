@@ -25,7 +25,7 @@ function SubmissionsPage() {
   }, [user.id])
 
   return (
-    <section>
+    <section className="content-page submissions-page">
       <h1>My Submissions</h1>
       {isLoading && <p>Loading...</p>}
       {error && <p className="message error" role="alert">{error}</p>}

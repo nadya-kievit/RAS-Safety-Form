@@ -103,9 +103,14 @@ function AdminUsersPage() {
   }
 
   return (
-    <section>
+    <section className="content-page users-page">
+      {showCreateForm && (
+        <button className="back-link back-link-button" type="button" onClick={closeCreateForm}>
+          ← Back
+        </button>
+      )}
       <div className="page-heading">
-        <h1>Users</h1>
+        <h1>{showCreateForm ? 'Create User' : 'Users'}</h1>
         {!showCreateForm && (
           <button type="button" onClick={() => setShowCreateForm(true)}>
             Create user
@@ -118,7 +123,7 @@ function AdminUsersPage() {
 
       {showCreateForm && (
         <form className="panel form-stack" onSubmit={handleCreate}>
-          <h2>Create a new user</h2>
+          <h2 className="sr-only">Create a new user</h2>
           {formError && <p className="message error" role="alert">{formError}</p>}
 
           <div className="two-column-form">
@@ -197,10 +202,10 @@ function AdminUsersPage() {
         </form>
       )}
 
-      {isLoading && <p>Loading users...</p>}
-      {!isLoading && users.length === 0 && !error && <p>No users found.</p>}
-      {!isLoading && users.length > 0 && (
-        <div className="table-scroll panel">
+      {!showCreateForm && isLoading && <p>Loading users...</p>}
+      {!showCreateForm && !isLoading && users.length === 0 && !error && <p>No users found.</p>}
+      {!showCreateForm && !isLoading && users.length > 0 && (
+        <div className="table-scroll data-table-card">
           <table>
             <thead>
               <tr>

@@ -7,7 +7,7 @@ function SubmissionList({ submissions, detailBasePath, showWorker = false }) {
   }
 
   return (
-    <div className="table-scroll">
+    <div className="table-scroll data-table-card">
       <table>
         <thead>
           <tr>

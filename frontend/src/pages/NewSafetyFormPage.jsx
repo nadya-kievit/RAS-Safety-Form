@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import ChecklistFieldset from '../components/forms/ChecklistFieldset.jsx'
 import PhotoInput from '../components/forms/PhotoInput.jsx'
 import { useAuth } from '../context/auth.js'
@@ -134,7 +134,8 @@ function NewSafetyFormPage() {
   }
 
   return (
-    <section>
+    <section className="content-page form-page">
+      <Link className="back-link" to="/framer">← Back</Link>
       <h1>New Safety Form</h1>
       {error && <p className="message error" role="alert">{error}</p>}
 

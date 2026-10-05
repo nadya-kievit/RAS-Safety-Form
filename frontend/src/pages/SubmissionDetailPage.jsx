@@ -37,7 +37,7 @@ function SubmissionDetailPage() {
 
   if (error || !submission) {
     return (
-      <section>
+      <section className="content-page">
         <p className="message error" role="alert">{error || 'Submission not found.'}</p>
         <Link to={backPath}>Back to submissions</Link>
       </section>
@@ -45,25 +45,19 @@ function SubmissionDetailPage() {
   }
 
   return (
-    <article>
-      <h1>Safety Form Submission</h1>
-      <Link to={backPath}>Back to submissions</Link>
+    <article className="content-page submission-detail-page">
+      <Link className="back-link" to={backPath}>← Back</Link>
+      <h1>Safety Form</h1>
 
       <dl className="details panel">
-        {user.role === 'admin' && (
-          <>
-            <dt>Worker</dt>
-            <dd>{submission.user?.firstName} {submission.user?.lastName}</dd>
-          </>
-        )}
         <dt>Site</dt>
         <dd>{submission.site?.name || `Site ${submission.siteId}`}</dd>
         <dt>Form date</dt>
         <dd>{formatDate(submission.formDate)}</dd>
         <dt>Submitted</dt>
         <dd>{formatDateTime(submission.submittedAt)}</dd>
-        <dt>Notes</dt>
-        <dd>{submission.notes || 'None'}</dd>
+        <dt>Submitted by</dt>
+        <dd>{submission.user?.firstName} {submission.user?.lastName}</dd>
       </dl>
 
       <section className="panel">
@@ -82,11 +76,19 @@ function SubmissionDetailPage() {
             {submission.photos.map((photo) => (
               <figure key={photo.id}>
                 <img src={photo.viewUrl} alt={photo.filename} />
-                <figcaption>{photo.filename}</figcaption>
+                <figcaption>
+                  <span>{photo.filename}</span>
+                  <a href={photo.viewUrl} target="_blank" rel="noreferrer">View</a>
+                </figcaption>
               </figure>
             ))}
           </div>
         )}
+      </section>
+
+      <section className="panel notes-panel">
+        <h2>Notes</h2>
+        <p>{submission.notes || 'None'}</p>
       </section>
     </article>
   )

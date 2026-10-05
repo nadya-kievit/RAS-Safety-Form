@@ -1,46 +1,34 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/auth.js'
 
 function AppLayout() {
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
-
-  async function handleLogout() {
-    try {
-      await logout()
-    } finally {
-      navigate('/login', { replace: true })
-    }
-  }
+  const { user } = useAuth()
+  const location = useLocation()
+  const isFramer = user.role === 'framer'
+  const isFramerHome = isFramer && location.pathname === '/framer'
+  const homePath = isFramer ? '/framer' : '/admin'
+  const profilePath = isFramer ? '/framer/profile' : '/admin/profile'
 
   return (
-    <div className="app-shell">
-      <header className="site-header">
-        <NavLink className="site-title" to={user.role === 'admin' ? '/admin' : '/framer'}>
-          RAS Safety Forms
+    <div className="app-shell branded-shell">
+      <header className="framer-site-header">
+        <NavLink className="ras-logo" to={homePath} aria-label="RAS home">
+          <span className="ras-logo-roof" aria-hidden="true" />
+          <span className="ras-logo-word" aria-hidden="true">RAS</span>
+          <span className="ras-logo-rule" aria-hidden="true" />
         </NavLink>
-        <nav aria-label="Main navigation">
-          {user.role === 'framer' && (
-            <>
-              <NavLink to="/framer">Home</NavLink>
-              <NavLink to="/framer/safety-form/new">New form</NavLink>
-              <NavLink to="/framer/submissions">My submissions</NavLink>
-              <NavLink to="/framer/profile">Profile</NavLink>
-            </>
-          )}
-          {user.role === 'admin' && (
-            <>
-              <NavLink to="/admin">Submissions</NavLink>
-              <NavLink to="/admin/users">Users</NavLink>
-              <NavLink to="/admin/profile">Profile</NavLink>
-            </>
-          )}
-          <button className="button-link" type="button" onClick={handleLogout}>
-            Logout
-          </button>
-        </nav>
+        <NavLink
+          className="profile-icon-link"
+          to={profilePath}
+          aria-label="Open profile"
+        >
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <circle cx="32" cy="22" r="11" />
+            <path d="M14 53c0-11 8-18 18-18s18 7 18 18H14Z" />
+          </svg>
+        </NavLink>
       </header>
-      <main className="page-container">
+      <main className={`page-container${isFramerHome ? ' framer-page-container' : ''}`}>
         <Outlet />
       </main>
     </div>

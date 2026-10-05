@@ -29,7 +29,7 @@ function PhotoInput({ files, onChange }) {
   }
 
   return (
-    <div className="field-group">
+    <div className="field-group photo-upload-field">
       <label htmlFor="photos">Photos</label>
       <input
         id="photos"

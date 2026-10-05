@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import SubmissionList from '../components/submissions/SubmissionList.jsx'
 import { getActiveSites } from '../services/siteService.js'
 import { getAllSubmissions } from '../services/submissionService.js'
@@ -80,8 +81,11 @@ function AdminDashboardPage() {
   }
 
   return (
-    <section>
-      <h1>Safety Form Submissions</h1>
+    <section className="content-page admin-dashboard-page">
+      <div className="page-heading">
+        <h1>Submissions</h1>
+        <Link className="button" to="/admin/users">Manage users</Link>
+      </div>
 
       <form className="panel filter-grid" onSubmit={handleFilter}>
         <div className="field-group">

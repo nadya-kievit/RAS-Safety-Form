@@ -6,16 +6,19 @@ function FramerHomePage() {
   const location = useLocation()
 
   return (
-    <section>
-      <h1>Welcome, {user.firstName}</h1>
+    <section className="framer-home">
       {location.state?.message && (
         <p className="message success" role="status">{location.state.message}</p>
       )}
-      <div className="action-list">
-        <Link className="button" to="/framer/safety-form/new">
+      <div className="framer-welcome">
+        <p>Welcome back</p>
+        <h1>{user.firstName} {user.lastName}</h1>
+      </div>
+      <div className="framer-home-actions">
+        <Link className="framer-action primary" to="/framer/safety-form/new">
           Complete Safety Form
         </Link>
-        <Link className="button secondary" to="/framer/submissions">
+        <Link className="framer-action secondary" to="/framer/submissions">
           My Submissions
         </Link>
       </div>
