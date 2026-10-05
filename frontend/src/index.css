@@ -72,7 +72,12 @@ h2 {
   justify-content: space-between;
   min-height: clamp(118px, 20vw, 194px);
   padding: 1.75rem max(2rem, calc((100vw - 1100px) / 2));
-  background: #006b4d;
+  background: #025539;
+}
+
+.header-logo {
+  width: 90px;
+  height: auto;
 }
 
 .ras-logo {
@@ -211,6 +216,48 @@ h2 {
   line-height: 0.95;
   letter-spacing: 0.01em;
   overflow-wrap: anywhere;
+}
+
+.recent-submissions {
+  margin-top: 2rem;
+}
+
+.recent-submissions h2 {
+  margin-bottom: 1rem;
+}
+
+.recent-submissions-list {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.recent-submission-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.recent-submission-row:last-child {
+  border-bottom: none;
+}
+
+.recent-submission-row h3 {
+  margin: 0 0 0.25rem;
+}
+
+.recent-submission-row p {
+  margin: 0;
+  color: #666;
+}
+
+.recent-submission-link {
+  color: var(--ras-green);
+  font-weight: 600;
+  text-decoration: none;
 }
 
 .framer-home-actions {

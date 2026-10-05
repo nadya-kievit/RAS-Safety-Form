@@ -1,9 +1,29 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/auth.js'
+import { useEffect, useState } from 'react'
+import { getUserSubmissions } from '../services/submissionService.js'
 
 function FramerHomePage() {
   const { user } = useAuth()
   const location = useLocation()
+  const [submissions, setSubmissions] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let ignore = false
+    getUserSubmissions(user.id)
+      .then((result) => {
+        if (!ignore) setSubmissions(result.slice(0, 5))
+      })
+      .catch(() => {
+        if (!ignore) setError('Could not load your submissions.')
+      })
+      .finally(() => {
+        if (!ignore) setIsLoading(false)
+      })
+    return () => { ignore = true }
+  }, [user.id])
 
   return (
     <section className="framer-home">
@@ -11,17 +31,46 @@ function FramerHomePage() {
         <p className="message success" role="status">{location.state.message}</p>
       )}
       <div className="framer-welcome">
-        <p>Welcome back</p>
+        <p>Welcome,</p>
         <h1>{user.firstName} {user.lastName}</h1>
       </div>
       <div className="framer-home-actions">
         <Link className="framer-action primary" to="/framer/safety-form/new">
           Complete Safety Form
         </Link>
-        <Link className="framer-action secondary" to="/framer/submissions">
+        <Link className="framer-action primary" to="/framer/submissions">
           My Submissions
         </Link>
       </div>
+
+      <section className="recent-submissions">
+        <h2>Recent submissions</h2>
+
+        <div className="recent-submissions-list">
+          {submissions.length === 0 ? (
+            <p className="empty-state">No submissions yet.</p>
+          ) : (
+            submissions.map((submission) => (
+              <div
+                className="recent-submission-row"
+                key={submission.id}
+              >
+                <div>
+                  <h3>{submission.siteName}</h3>
+                  <p>{submission.submittedAt}</p>
+                </div>
+
+                <Link
+                  to={`/framer/submissions/${submission.id}`}
+                  className="recent-submission-link"
+                >
+                  View →
+                </Link>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
     </section>
   )
 }

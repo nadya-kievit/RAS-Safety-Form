@@ -12,11 +12,7 @@ function AppLayout() {
   return (
     <div className="app-shell branded-shell">
       <header className="framer-site-header">
-        <NavLink className="ras-logo" to={homePath} aria-label="RAS home">
-          <span className="ras-logo-roof" aria-hidden="true" />
-          <span className="ras-logo-word" aria-hidden="true">RAS</span>
-          <span className="ras-logo-rule" aria-hidden="true" />
-        </NavLink>
+        <img src="/ras-logo.png" alt="RAS logo" className="header-logo" />
         <NavLink
           className="profile-icon-link"
           to={profilePath}
