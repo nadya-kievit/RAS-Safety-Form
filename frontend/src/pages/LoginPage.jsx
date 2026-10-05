@@ -1,0 +1,75 @@
+import { useState } from 'react'
+import { Navigate, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/auth.js'
+
+function LoginPage() {
+  const { user, login } = useAuth()
+  const navigate = useNavigate()
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  if (user) {
+    return <Navigate to={user.role === 'admin' ? '/admin' : '/framer'} replace />
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+    setError('')
+    setIsSubmitting(true)
+
+    try {
+      const authenticatedUser = await login({ username, password })
+      navigate(authenticatedUser.role === 'admin' ? '/admin' : '/framer', {
+        replace: true,
+      })
+    } catch (requestError) {
+      setError(requestError.status === 401
+        ? 'Invalid username or password.'
+        : requestError.message || 'Could not log in.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <main className="auth-page">
+      <form className="panel narrow-panel" onSubmit={handleSubmit}>
+        <h1>Login</h1>
+        {error && <p className="message error" role="alert">{error}</p>}
+
+        <div className="field-group">
+          <label htmlFor="username">Username</label>
+          <input
+            id="username"
+            name="username"
+            autoComplete="username"
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+            required
+          />
+        </div>
+
+        <div className="field-group">
+          <label htmlFor="password">Password</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            required
+          />
+        </div>
+
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Logging in...' : 'Login'}
+        </button>
+      </form>
+    </main>
+  )
+}
+
+export default LoginPage
