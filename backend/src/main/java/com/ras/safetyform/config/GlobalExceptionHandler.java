@@ -1,6 +1,7 @@
 package com.ras.safetyform.config;
 
 import com.ras.safetyform.dto.ApiError;
+import com.ras.safetyform.service.AuthenticationException;
 import com.ras.safetyform.service.InvalidRequestException;
 import com.ras.safetyform.service.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,6 +19,13 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiError> handleAuthentication(
+            AuthenticationException exception,
+            HttpServletRequest request) {
+        return error(HttpStatus.UNAUTHORIZED, exception.getMessage(), request, Map.of());
+    }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiError> handleNotFound(

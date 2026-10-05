@@ -1,11 +1,9 @@
 package com.ras.safetyform.controller;
 
-import com.ras.safetyform.dto.ChecklistAnswerResponse;
 import com.ras.safetyform.dto.PhotoCreateRequest;
 import com.ras.safetyform.dto.PhotoResponse;
 import com.ras.safetyform.dto.SafetyFormCreateRequest;
 import com.ras.safetyform.dto.SafetyFormResponse;
-import com.ras.safetyform.dto.SaveResponsesRequest;
 import com.ras.safetyform.service.SafetyFormService;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
@@ -54,18 +52,6 @@ public class SafetyFormController {
                     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
                     LocalDate endDate) {
         return safetyFormService.getForms(siteId, userId, startDate, endDate);
-    }
-
-    @PostMapping("/{formId}/responses")
-    public List<ChecklistAnswerResponse> saveResponses(
-            @PathVariable Integer formId,
-            @Valid @RequestBody SaveResponsesRequest request) {
-        return safetyFormService.saveResponses(formId, request);
-    }
-
-    @GetMapping("/{formId}/responses")
-    public List<ChecklistAnswerResponse> getResponses(@PathVariable Integer formId) {
-        return safetyFormService.getResponses(formId);
     }
 
     @PostMapping("/{formId}/photos")

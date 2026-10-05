@@ -31,9 +31,6 @@ public class SafetyForm {
     @Column(name = "form_date", nullable = false)
     private LocalDate formDate;
 
-    @Column(nullable = false, length = 20)
-    private String status;
-
     @Column(columnDefinition = "TEXT")
     private String notes;
 
@@ -50,14 +47,12 @@ public class SafetyForm {
             User user,
             Site site,
             LocalDate formDate,
-            String status,
             String notes,
             LocalDateTime submittedAt,
             LocalDateTime updatedAt) {
         this.user = user;
         this.site = site;
         this.formDate = formDate;
-        this.status = status;
         this.notes = notes;
         this.submittedAt = submittedAt;
         this.updatedAt = updatedAt;
@@ -77,10 +72,6 @@ public class SafetyForm {
 
     public LocalDate getFormDate() {
         return formDate;
-    }
-
-    public String getStatus() {
-        return status;
     }
 
     public String getNotes() {

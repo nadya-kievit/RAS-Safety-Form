@@ -8,7 +8,6 @@ public record SafetyFormResponse(
         Integer userId,
         Integer siteId,
         LocalDate formDate,
-        String status,
         String notes,
         LocalDateTime submittedAt,
         LocalDateTime updatedAt,

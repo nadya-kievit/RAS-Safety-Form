@@ -1,7 +1,6 @@
 package com.ras.safetyform.controller;
 
 import com.ras.safetyform.dto.SafetyFormResponse;
-import com.ras.safetyform.dto.SiteAssignmentResponse;
 import com.ras.safetyform.dto.UserResponse;
 import com.ras.safetyform.service.SafetyFormService;
 import com.ras.safetyform.service.UserService;
@@ -26,11 +25,6 @@ public class UserController {
     @GetMapping("/{userId}")
     public UserResponse getUser(@PathVariable Integer userId) {
         return userService.getUser(userId);
-    }
-
-    @GetMapping("/{userId}/assignments")
-    public List<SiteAssignmentResponse> getAssignments(@PathVariable Integer userId) {
-        return userService.getAssignments(userId);
     }
 
     @GetMapping("/{userId}/safety-forms")

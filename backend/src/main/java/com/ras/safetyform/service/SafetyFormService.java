@@ -1,34 +1,22 @@
 package com.ras.safetyform.service;
 
-import com.ras.safetyform.dto.ChecklistAnswerRequest;
-import com.ras.safetyform.dto.ChecklistAnswerResponse;
 import com.ras.safetyform.dto.PhotoCreateRequest;
 import com.ras.safetyform.dto.PhotoResponse;
 import com.ras.safetyform.dto.SafetyFormCreateRequest;
 import com.ras.safetyform.dto.SafetyFormResponse;
-import com.ras.safetyform.dto.SaveResponsesRequest;
 import com.ras.safetyform.dto.SiteResponse;
 import com.ras.safetyform.dto.UserResponse;
 import com.ras.safetyform.model.Photo;
-import com.ras.safetyform.model.SafetyChecklistItem;
 import com.ras.safetyform.model.SafetyForm;
 import com.ras.safetyform.model.Site;
 import com.ras.safetyform.model.User;
 import com.ras.safetyform.repository.PhotoRepository;
-import com.ras.safetyform.repository.SafetyChecklistItemRepository;
 import com.ras.safetyform.repository.SafetyFormRepository;
-import com.ras.safetyform.repository.SafetyFormResponseRepository;
 import com.ras.safetyform.repository.SiteRepository;
 import com.ras.safetyform.repository.UserRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,22 +26,16 @@ public class SafetyFormService {
     private final SafetyFormRepository formRepository;
     private final UserRepository userRepository;
     private final SiteRepository siteRepository;
-    private final SafetyChecklistItemRepository checklistItemRepository;
-    private final SafetyFormResponseRepository responseRepository;
     private final PhotoRepository photoRepository;
 
     public SafetyFormService(
             SafetyFormRepository formRepository,
             UserRepository userRepository,
             SiteRepository siteRepository,
-            SafetyChecklistItemRepository checklistItemRepository,
-            SafetyFormResponseRepository responseRepository,
             PhotoRepository photoRepository) {
         this.formRepository = formRepository;
         this.userRepository = userRepository;
         this.siteRepository = siteRepository;
-        this.checklistItemRepository = checklistItemRepository;
-        this.responseRepository = responseRepository;
         this.photoRepository = photoRepository;
     }
 
@@ -68,7 +50,6 @@ public class SafetyFormService {
                 user,
                 site,
                 request.formDate(),
-                request.status(),
                 request.notes(),
                 now,
                 now);
@@ -107,68 +88,6 @@ public class SafetyFormService {
     }
 
     @Transactional
-    public List<ChecklistAnswerResponse> saveResponses(
-            Integer formId,
-            SaveResponsesRequest request) {
-        SafetyForm form = findForm(formId);
-        List<Integer> itemIds = request.responses().stream()
-                .map(ChecklistAnswerRequest::checklistItemId)
-                .toList();
-        Set<Integer> uniqueItemIds = new HashSet<>(itemIds);
-        if (uniqueItemIds.size() != itemIds.size()) {
-            throw new InvalidRequestException(
-                    "Each checklist item may appear only once in a response batch");
-        }
-
-        List<SafetyChecklistItem> items = checklistItemRepository
-                .findByIdIn(itemIds);
-        Map<Integer, SafetyChecklistItem> itemsById = items.stream()
-                .collect(Collectors.toMap(SafetyChecklistItem::getId, Function.identity()));
-        Integer expectedChecklistId = form.getSite().getChecklist().getId();
-        List<Integer> invalidItemIds = uniqueItemIds.stream()
-                .filter(id -> {
-                    SafetyChecklistItem item = itemsById.get(id);
-                    return item == null
-                            || !item.getChecklist().getId().equals(expectedChecklistId);
-                })
-                .sorted()
-                .toList();
-        if (!invalidItemIds.isEmpty()) {
-            throw new InvalidRequestException(
-                    "Checklist items do not belong to this site's checklist: "
-                            + invalidItemIds);
-        }
-
-        Map<Integer, com.ras.safetyform.model.SafetyFormResponse> existingByItemId =
-                new HashMap<>();
-        responseRepository.findBySafetyForm_IdOrderByChecklistItem_IdAsc(formId)
-                .forEach(response -> existingByItemId.put(
-                        response.getChecklistItem().getId(), response));
-
-        for (ChecklistAnswerRequest answer : request.responses()) {
-            com.ras.safetyform.model.SafetyFormResponse response =
-                    existingByItemId.get(answer.checklistItemId());
-            if (response == null) {
-                response = new com.ras.safetyform.model.SafetyFormResponse(
-                        form,
-                        itemsById.get(answer.checklistItemId()),
-                        answer.response());
-            } else {
-                response.setResponse(answer.response());
-            }
-            responseRepository.save(response);
-        }
-
-        return getResponseRecords(formId);
-    }
-
-    @Transactional(readOnly = true)
-    public List<ChecklistAnswerResponse> getResponses(Integer formId) {
-        findForm(formId);
-        return getResponseRecords(formId);
-    }
-
-    @Transactional
     public PhotoResponse createPhoto(Integer formId, PhotoCreateRequest request) {
         SafetyForm form = findForm(formId);
         Photo photo = new Photo(
@@ -195,17 +114,6 @@ public class SafetyFormService {
                 .orElseThrow(() -> new ResourceNotFoundException("Safety form not found"));
     }
 
-    private List<ChecklistAnswerResponse> getResponseRecords(Integer formId) {
-        return responseRepository.findBySafetyForm_IdOrderByChecklistItem_IdAsc(formId)
-                .stream()
-                .map(response -> new ChecklistAnswerResponse(
-                        response.getId(),
-                        response.getSafetyForm().getId(),
-                        response.getChecklistItem().getId(),
-                        response.isResponse()))
-                .toList();
-    }
-
     private SafetyFormResponse toFormResponse(SafetyForm form) {
         User user = form.getUser();
         Site site = form.getSite();
@@ -215,7 +123,6 @@ public class SafetyFormService {
                 user.getLastName(),
                 user.getUsername(),
                 user.getRole(),
-                user.isActive(),
                 user.getCreatedAt());
         SiteResponse siteResponse = new SiteResponse(
                 site.getId(),
@@ -228,7 +135,6 @@ public class SafetyFormService {
                 user.getId(),
                 site.getId(),
                 form.getFormDate(),
-                form.getStatus(),
                 form.getNotes(),
                 form.getSubmittedAt(),
                 form.getUpdatedAt(),

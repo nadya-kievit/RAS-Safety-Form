@@ -31,9 +31,6 @@ public class User {
     @Column(nullable = false, length = 20)
     private String role;
 
-    @Column(nullable = false)
-    private boolean active;
-
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -56,12 +53,12 @@ public class User {
         return username;
     }
 
-    public String getRole() {
-        return role;
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
-    public boolean isActive() {
-        return active;
+    public String getRole() {
+        return role;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -8,6 +8,5 @@ public record UserResponse(
         String lastName,
         String username,
         String role,
-        boolean active,
         LocalDateTime createdAt) {
 }
