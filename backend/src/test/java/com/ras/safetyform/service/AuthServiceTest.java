@@ -31,6 +31,7 @@ class AuthServiceTest {
         when(user.getUsername()).thenReturn("alex");
         when(user.getPasswordHash()).thenReturn(passwordEncoder.encode("correct-password"));
         when(user.getRole()).thenReturn("framer");
+        when(user.isActive()).thenReturn(true);
         when(user.getCreatedAt()).thenReturn(createdAt);
         when(userRepository.findByUsername("alex")).thenReturn(Optional.of(user));
 
@@ -62,6 +63,19 @@ class AuthServiceTest {
         AuthenticationException exception = assertThrows(
                 AuthenticationException.class,
                 () -> authService.login(new LoginRequest("unknown", "any-password")));
+
+        assertEquals("Invalid username or password", exception.getMessage());
+    }
+
+    @Test
+    void loginRejectsInactiveUser() {
+        User user = mock(User.class);
+        when(user.isActive()).thenReturn(false);
+        when(userRepository.findByUsername("alex")).thenReturn(Optional.of(user));
+
+        AuthenticationException exception = assertThrows(
+                AuthenticationException.class,
+                () -> authService.login(new LoginRequest("alex", "correct-password")));
 
         assertEquals("Invalid username or password", exception.getMessage());
     }

@@ -16,3 +16,26 @@ export function logout() {
 export async function getCurrentUser() {
   return mapUser(await apiRequest('/auth/me'))
 }
+
+export async function updateProfile(profile) {
+  const user = await apiRequest('/auth/me', {
+    method: 'PATCH',
+    body: JSON.stringify({
+      username: profile.username,
+      first_name: profile.firstName,
+      last_name: profile.lastName,
+    }),
+  })
+  return mapUser(user)
+}
+
+export function changePassword(passwords) {
+  return apiRequest('/auth/me/password', {
+    method: 'POST',
+    body: JSON.stringify({
+      current_password: passwords.currentPassword,
+      new_password: passwords.newPassword,
+      confirm_new_password: passwords.confirmNewPassword,
+    }),
+  })
+}

@@ -6,6 +6,7 @@ export function mapUser(user) {
     lastName: user.last_name,
     username: user.username,
     role: user.role,
+    active: user.active,
     createdAt: user.created_at,
   }
 }

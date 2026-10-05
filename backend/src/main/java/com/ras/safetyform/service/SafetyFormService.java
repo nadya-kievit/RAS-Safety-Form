@@ -123,6 +123,7 @@ public class SafetyFormService {
                 user.getLastName(),
                 user.getUsername(),
                 user.getRole(),
+                user.isActive(),
                 user.getCreatedAt());
         SiteResponse siteResponse = new SiteResponse(
                 site.getId(),

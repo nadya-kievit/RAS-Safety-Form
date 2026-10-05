@@ -2,6 +2,7 @@ package com.ras.safetyform.config;
 
 import com.ras.safetyform.dto.ApiError;
 import com.ras.safetyform.service.AuthenticationException;
+import com.ras.safetyform.service.AuthorizationException;
 import com.ras.safetyform.service.InvalidRequestException;
 import com.ras.safetyform.service.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,6 +26,13 @@ public class GlobalExceptionHandler {
             AuthenticationException exception,
             HttpServletRequest request) {
         return error(HttpStatus.UNAUTHORIZED, exception.getMessage(), request, Map.of());
+    }
+
+    @ExceptionHandler(AuthorizationException.class)
+    public ResponseEntity<ApiError> handleAuthorization(
+            AuthorizationException exception,
+            HttpServletRequest request) {
+        return error(HttpStatus.FORBIDDEN, exception.getMessage(), request, Map.of());
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)

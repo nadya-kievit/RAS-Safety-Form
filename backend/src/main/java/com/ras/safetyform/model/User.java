@@ -31,10 +31,28 @@ public class User {
     @Column(nullable = false, length = 20)
     private String role;
 
+    @Column(nullable = false)
+    private boolean active;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     protected User() {
+    }
+
+    public User(
+            String firstName,
+            String lastName,
+            String username,
+            String passwordHash,
+            String role) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.username = username;
+        this.passwordHash = passwordHash;
+        this.role = role;
+        this.active = true;
+        this.createdAt = LocalDateTime.now();
     }
 
     public Integer getId() {
@@ -61,7 +79,25 @@ public class User {
         return role;
     }
 
+    public boolean isActive() {
+        return active;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public void updateProfile(String username, String firstName, String lastName) {
+        this.username = username;
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
+
+    public void changePasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }

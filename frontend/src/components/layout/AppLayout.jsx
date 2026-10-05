@@ -25,9 +25,16 @@ function AppLayout() {
               <NavLink to="/framer">Home</NavLink>
               <NavLink to="/framer/safety-form/new">New form</NavLink>
               <NavLink to="/framer/submissions">My submissions</NavLink>
+              <NavLink to="/framer/profile">Profile</NavLink>
             </>
           )}
-          {user.role === 'admin' && <NavLink to="/admin">Submissions</NavLink>}
+          {user.role === 'admin' && (
+            <>
+              <NavLink to="/admin">Submissions</NavLink>
+              <NavLink to="/admin/users">Users</NavLink>
+              <NavLink to="/admin/profile">Profile</NavLink>
+            </>
+          )}
           <button className="button-link" type="button" onClick={handleLogout}>
             Logout
           </button>

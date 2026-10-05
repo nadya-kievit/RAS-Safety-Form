@@ -33,7 +33,17 @@ export function AuthProvider({ children }) {
     }
   }
 
-  const value = useMemo(() => ({ user, login, logout }), [user])
+  async function updateProfile(profile) {
+    const updatedUser = await authService.updateProfile(profile)
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser))
+    setUser(updatedUser)
+    return updatedUser
+  }
+
+  const value = useMemo(
+    () => ({ user, login, logout, updateProfile }),
+    [user],
+  )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

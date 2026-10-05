@@ -24,7 +24,8 @@ public class AuthService {
         User user = userRepository.findByUsername(request.username())
                 .orElseThrow(this::invalidCredentials);
 
-        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+        if (!user.isActive()
+                || !passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             throw invalidCredentials();
         }
 
@@ -34,6 +35,7 @@ public class AuthService {
                 user.getLastName(),
                 user.getUsername(),
                 user.getRole(),
+                user.isActive(),
                 user.getCreatedAt());
     }
 
