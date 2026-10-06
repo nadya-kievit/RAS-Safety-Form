@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { ChevronDown, ChevronRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../context/auth.js'
 import {
   createUser,
@@ -103,11 +105,20 @@ function AdminUsersPage() {
   }
 
   return (
-    <section className="content-page users-page">
+    <section className={`content-page users-page${showCreateForm ? ' create-user-page' : ''}`}>
       <div className="page-heading">
-        <h1 className="page-title">{showCreateForm ? 'Create User' : 'Users'}</h1>
+        <div className="page-title-group">
+          <h1 className="page-title">{showCreateForm ? 'Create User' : 'Users'}</h1>
+          {showCreateForm && (
+            <nav className="page-breadcrumb" aria-label="Breadcrumb">
+              <Link to="/admin/users" onClick={closeCreateForm}>Users</Link>
+              <ChevronRight aria-hidden="true" />
+              <span aria-current="page">Create User</span>
+            </nav>
+          )}
+        </div>
         {!showCreateForm && (
-          <button type="button" onClick={() => setShowCreateForm(true)}>
+          <button className="users-create-button" type="button" onClick={() => setShowCreateForm(true)}>
             Create user
           </button>
         )}
@@ -158,15 +169,18 @@ function AdminUsersPage() {
             </div>
             <div className="field-group">
               <label htmlFor="new-user-role">Role</label>
-              <select
-                id="new-user-role"
-                name="role"
-                value={newUser.role}
-                onChange={updateField}
-              >
-                <option value="framer">Framer</option>
-                <option value="admin">Admin</option>
-              </select>
+              <div className="select-control create-user-select">
+                <select
+                  id="new-user-role"
+                  name="role"
+                  value={newUser.role}
+                  onChange={updateField}
+                >
+                  <option value="framer">Framer</option>
+                  <option value="admin">Admin</option>
+                </select>
+                <ChevronDown aria-hidden="true" />
+              </div>
             </div>
           </div>
 
@@ -183,7 +197,6 @@ function AdminUsersPage() {
               maxLength="100"
               required
             />
-            <small>Use at least 8 characters.</small>
           </div>
 
           <div className="form-actions">
@@ -200,7 +213,7 @@ function AdminUsersPage() {
       {!showCreateForm && isLoading && <p>Loading users...</p>}
       {!showCreateForm && !isLoading && users.length === 0 && !error && <p>No users found.</p>}
       {!showCreateForm && !isLoading && users.length > 0 && (
-        <div className="table-scroll data-table-card">
+        <div className="table-scroll data-table-card users-table-card">
           <table>
             <thead>
               <tr>
@@ -226,7 +239,7 @@ function AdminUsersPage() {
                     </td>
                     <td>
                       <button
-                        className="secondary compact-button"
+                        className="secondary compact-button user-status-button"
                         type="button"
                         onClick={() => handleActivation(user)}
                         disabled={updatingUserId === user.id || isCurrentUser}

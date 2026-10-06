@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { Check, ChevronRight } from 'lucide-react'
 import { useAuth } from '../context/auth.js'
 import { getSubmissionDetail } from '../services/submissionService.js'
 import { formatDateTime } from '../utils/date.js'
@@ -46,7 +47,16 @@ function SubmissionDetailPage() {
 
   return (
     <article className="content-page submission-detail-page">
-      <h1 className="page-title">Safety Form</h1>
+      <div className="nested-page-heading">
+        <h1 className="page-title">Safety Form</h1>
+        <nav className="page-breadcrumb" aria-label="Breadcrumb">
+          <Link to={backPath}>
+            {user.role === 'admin' ? 'Submissions' : 'My Submissions'}
+          </Link>
+          <ChevronRight aria-hidden="true" />
+          <span aria-current="page">Safety Form</span>
+        </nav>
+      </div>
 
       <dl className="details panel">
         <dt>Site</dt>
@@ -57,14 +67,19 @@ function SubmissionDetailPage() {
         <dd>{submission.user?.firstName} {submission.user?.lastName}</dd>
       </dl>
 
-      <section className="panel">
+      <section className="panel checklist-panel">
         <h2>Safety checklist</h2>
-        <ul>
-          {submission.checklist.items.map((item) => <li key={item.id}>{item.item}</li>)}
+        <ul className="safety-checklist">
+          {submission.checklist.items.map((item) => (
+            <li key={item.id}>
+              <Check aria-hidden="true" />
+              <span>{item.item}</span>
+            </li>
+          ))}
         </ul>
       </section>
 
-      <section className="panel">
+      <section className="panel submission-photos-panel">
         <h2>Photos</h2>
         {submission.photos.length === 0 ? (
           <p>No photos are attached.</p>

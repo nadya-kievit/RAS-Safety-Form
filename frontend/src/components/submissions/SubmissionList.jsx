@@ -1,8 +1,10 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 import { formatDateTime } from '../../utils/date.js'
 
 function SubmissionList({ submissions, detailBasePath, showWorker = false }) {
+  const navigate = useNavigate()
+
   if (submissions.length === 0) {
     return <p>No submissions found.</p>
   }
@@ -17,11 +19,10 @@ function SubmissionList({ submissions, detailBasePath, showWorker = false }) {
               <p>{formatDateTime(submission.submittedAt)}</p>
             </div>
             <Link
-              className="submission-list-link"
+              className="recent-submission-link"
               to={`${detailBasePath}/${submission.id}`}
             >
               View
-              <ChevronRight aria-hidden="true" />
             </Link>
           </div>
         ))}
@@ -30,7 +31,7 @@ function SubmissionList({ submissions, detailBasePath, showWorker = false }) {
   }
 
   return (
-    <div className="table-scroll data-table-card">
+    <div className="table-scroll admin-submissions-table">
       <table>
         <thead>
           <tr>
@@ -41,18 +42,35 @@ function SubmissionList({ submissions, detailBasePath, showWorker = false }) {
           </tr>
         </thead>
         <tbody>
-          {submissions.map((submission) => (
-            <tr key={submission.id}>
-              {showWorker && (
-                <td>{submission.user?.firstName} {submission.user?.lastName}</td>
-              )}
-              <td>{submission.site?.name || `Site ${submission.siteId}`}</td>
-              <td>{formatDateTime(submission.submittedAt)}</td>
-              <td>
-                <Link to={`${detailBasePath}/${submission.id}`}>View</Link>
-              </td>
-            </tr>
-          ))}
+          {submissions.map((submission) => {
+            const detailPath = `${detailBasePath}/${submission.id}`
+            const accessibleLabel = `View submission from ${submission.user?.firstName || 'worker'} at ${submission.site?.name || `Site ${submission.siteId}`}`
+
+            return (
+              <tr
+                key={submission.id}
+                role="link"
+                tabIndex={0}
+                aria-label={accessibleLabel}
+                onClick={() => navigate(detailPath)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    navigate(detailPath)
+                  }
+                }}
+              >
+                {showWorker && (
+                  <td>{submission.user?.firstName} {submission.user?.lastName}</td>
+                )}
+                <td>{submission.site?.name || `Site ${submission.siteId}`}</td>
+                <td>{formatDateTime(submission.submittedAt)}</td>
+                <td className="submission-table-action" aria-hidden="true">
+                  <ChevronRight />
+                </td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
     </div>

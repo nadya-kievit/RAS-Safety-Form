@@ -35,8 +35,9 @@ function LoginPage() {
 
   return (
     <main className="auth-page">
-      <form className="panel narrow-panel" onSubmit={handleSubmit}>
+      <form className="panel narrow-panel login-card" onSubmit={handleSubmit}>
         <h1 className="page-title">Login</h1>
+        <p className="login-subtitle">RAS Safety Forms</p>
         {error && <p className="message error" role="alert">{error}</p>}
 
         <div className="field-group">

@@ -7,6 +7,9 @@ function AppLayout() {
   const location = useLocation()
   const isFramer = user.role === 'framer'
   const isFramerHome = isFramer && location.pathname === '/framer'
+  const usesWideAdminLayout = !isFramer && (
+    location.pathname === '/admin' || location.pathname === '/admin/users'
+  )
   const homePath = isFramer ? '/framer' : '/admin'
   const profilePath = isFramer ? '/framer/profile' : '/admin/profile'
 
@@ -25,12 +28,21 @@ function AppLayout() {
             </>
           ) : (
             <>
-              <NavLink end to="/admin">Submissions</NavLink>
+              <NavLink
+                end
+                to="/admin"
+                className={({ isActive }) => (
+                  isActive || location.pathname.startsWith('/admin/submissions/')
+                    ? 'active'
+                    : undefined
+                )}
+              >
+                Submissions
+              </NavLink>
               <NavLink to="/admin/users">Users</NavLink>
             </>
           )}
         </nav>
-        {isFramer ? (
           <div className="profile-control">
             <NavLink
               className="profile-button"
@@ -44,26 +56,11 @@ function AppLayout() {
                 </svg>
               </span>
               <ChevronDown className="profile-chevron" size={19} aria-hidden="true" />
-              <span className="profile-role">Framer</span>
+              <span className="profile-role">{isFramer ? 'Framer' : 'Admin'}</span>
             </NavLink>
           </div>
-        ) : (
-          <NavLink
-            className="profile-icon-link"
-            to={profilePath}
-            aria-label="Open Admin profile"
-          >
-            <span className="profile-icon-circle">
-              <svg viewBox="0 0 64 64" aria-hidden="true">
-                <circle cx="32" cy="22" r="11" />
-                <path d="M14 53c0-11 8-18 18-18s18 7 18 18H14Z" />
-              </svg>
-            </span>
-            <span className="profile-role-label">Admin</span>
-          </NavLink>
-        )}
       </header>
-      <main className={`page-container${isFramerHome ? ' framer-page-container' : ''}`}>
+      <main className={`page-container${isFramerHome ? ' framer-page-container' : ''}${usesWideAdminLayout ? ' admin-wide-container' : ''}`}>
         <Outlet />
       </main>
     </div>
