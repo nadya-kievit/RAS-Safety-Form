@@ -104,11 +104,6 @@ function AdminUsersPage() {
 
   return (
     <section className="content-page users-page">
-      {showCreateForm && (
-        <button className="back-link back-link-button" type="button" onClick={closeCreateForm}>
-          ← Back
-        </button>
-      )}
       <div className="page-heading">
         <h1>{showCreateForm ? 'Create User' : 'Users'}</h1>
         {!showCreateForm && (

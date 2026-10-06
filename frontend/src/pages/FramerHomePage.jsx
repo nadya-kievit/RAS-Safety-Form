@@ -1,7 +1,9 @@
 import { Link, useLocation } from 'react-router-dom'
+import { ArrowRight, FilePlus2, Files } from 'lucide-react'
 import { useAuth } from '../context/auth.js'
 import { useEffect, useState } from 'react'
 import { getUserSubmissions } from '../services/submissionService.js'
+import { formatDateTime } from '../utils/date.js'
 
 function FramerHomePage() {
   const { user } = useAuth()
@@ -31,15 +33,27 @@ function FramerHomePage() {
         <p className="message success" role="status">{location.state.message}</p>
       )}
       <div className="framer-welcome">
-        <p>Welcome,</p>
+        <p>Welcome back</p>
         <h1>{user.firstName} {user.lastName}</h1>
       </div>
       <div className="framer-home-actions">
-        <Link className="framer-action primary" to="/framer/safety-form/new">
-          Complete Safety Form
+        <Link className="framer-action" to="/framer/safety-form/new">
+          <span className="framer-action-icon primary" aria-hidden="true">
+            <FilePlus2 />
+          </span>
+          <span className="framer-action-copy">
+            <strong>Complete safety form</strong>
+            <span>Start a new construction safety form</span>
+          </span>
         </Link>
-        <Link className="framer-action primary" to="/framer/submissions">
-          My Submissions
+        <Link className="framer-action" to="/framer/submissions">
+          <span className="framer-action-icon" aria-hidden="true">
+            <Files />
+          </span>
+          <span className="framer-action-copy">
+            <strong>My submissions</strong>
+            <span>View and manage your submitted forms</span>
+          </span>
         </Link>
       </div>
 
@@ -47,7 +61,11 @@ function FramerHomePage() {
         <h2>Recent submissions</h2>
 
         <div className="recent-submissions-list">
-          {submissions.length === 0 ? (
+          {error ? (
+            <p className="message error" role="alert">{error}</p>
+          ) : isLoading ? (
+            <p className="empty-state">Loading submissions...</p>
+          ) : submissions.length === 0 ? (
             <p className="empty-state">No submissions yet.</p>
           ) : (
             submissions.map((submission) => (
@@ -56,15 +74,15 @@ function FramerHomePage() {
                 key={submission.id}
               >
                 <div>
-                  <h3>{submission.siteName}</h3>
-                  <p>{submission.submittedAt}</p>
+                  <h3>{submission.site?.name || `Site ${submission.siteId}`}</h3>
+                  <p>{formatDateTime(submission.submittedAt)}</p>
                 </div>
 
                 <Link
                   to={`/framer/submissions/${submission.id}`}
                   className="recent-submission-link"
                 >
-                  View →
+                  View
                 </Link>
               </div>
             ))

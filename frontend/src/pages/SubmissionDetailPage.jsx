@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../context/auth.js'
 import { getSubmissionDetail } from '../services/submissionService.js'
-import { formatDate, formatDateTime } from '../utils/date.js'
+import { formatDateTime } from '../utils/date.js'
 
 function SubmissionDetailPage() {
   const { submissionId } = useParams()
@@ -46,14 +46,11 @@ function SubmissionDetailPage() {
 
   return (
     <article className="content-page submission-detail-page">
-      <Link className="back-link" to={backPath}>← Back</Link>
       <h1>Safety Form</h1>
 
       <dl className="details panel">
         <dt>Site</dt>
         <dd>{submission.site?.name || `Site ${submission.siteId}`}</dd>
-        <dt>Form date</dt>
-        <dd>{formatDate(submission.formDate)}</dd>
         <dt>Submitted</dt>
         <dd>{formatDateTime(submission.submittedAt)}</dd>
         <dt>Submitted by</dt>

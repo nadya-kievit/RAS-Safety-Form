@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import ChecklistFieldset from '../components/forms/ChecklistFieldset.jsx'
 import PhotoInput from '../components/forms/PhotoInput.jsx'
 import { useAuth } from '../context/auth.js'
@@ -135,8 +135,7 @@ function NewSafetyFormPage() {
 
   return (
     <section className="content-page form-page">
-      <Link className="back-link" to="/framer">← Back</Link>
-      <h1>New Safety Form</h1>
+      <h1>Safety Form</h1>
       {error && <p className="message error" role="alert">{error}</p>}
 
       <form className="panel form-stack" onSubmit={handleSubmit}>
@@ -187,7 +186,7 @@ function NewSafetyFormPage() {
         </div>
 
         <button type="submit" disabled={isSubmitting || isLoadingChecklist}>
-          {isSubmitting ? 'Submitting...' : 'Submit Safety Form'}
+          {isSubmitting ? 'Submitting...' : 'Submit'}
         </button>
       </form>
     </section>
