@@ -105,7 +105,7 @@ function AdminUsersPage() {
   return (
     <section className="content-page users-page">
       <div className="page-heading">
-        <h1>{showCreateForm ? 'Create User' : 'Users'}</h1>
+        <h1 className="page-title">{showCreateForm ? 'Create User' : 'Users'}</h1>
         {!showCreateForm && (
           <button type="button" onClick={() => setShowCreateForm(true)}>
             Create user

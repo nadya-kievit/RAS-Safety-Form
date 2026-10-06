@@ -36,7 +36,7 @@ function LoginPage() {
   return (
     <main className="auth-page">
       <form className="panel narrow-panel" onSubmit={handleSubmit}>
-        <h1>Login</h1>
+        <h1 className="page-title">Login</h1>
         {error && <p className="message error" role="alert">{error}</p>}
 
         <div className="field-group">

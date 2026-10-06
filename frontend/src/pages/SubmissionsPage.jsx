@@ -26,7 +26,7 @@ function SubmissionsPage() {
 
   return (
     <section className="content-page submissions-page">
-      <h1>My Submissions</h1>
+      <h1 className="page-title">My Submissions</h1>
       {isLoading && <p>Loading...</p>}
       {error && <p className="message error" role="alert">{error}</p>}
       {!isLoading && !error && (

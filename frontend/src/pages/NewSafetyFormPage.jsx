@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ChevronDown } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import ChecklistFieldset from '../components/forms/ChecklistFieldset.jsx'
 import PhotoInput from '../components/forms/PhotoInput.jsx'
@@ -135,7 +136,7 @@ function NewSafetyFormPage() {
 
   return (
     <section className="content-page form-page">
-      <h1>Safety Form</h1>
+      <h1 className="page-title">Safety Form</h1>
       {error && <p className="message error" role="alert">{error}</p>}
 
       <form className="panel form-stack" onSubmit={handleSubmit}>
@@ -152,18 +153,21 @@ function NewSafetyFormPage() {
 
         <div className="field-group">
           <label htmlFor="site">Site</label>
-          <select
-            id="site"
-            value={siteId}
-            onChange={handleSiteChange}
-            disabled={isLoadingSites}
-            required
-          >
-            <option value="">{isLoadingSites ? 'Loading sites...' : 'Select a site'}</option>
-            {sites.map((site) => (
-              <option key={site.id} value={site.id}>{site.name}</option>
-            ))}
-          </select>
+          <div className="select-control">
+            <select
+              id="site"
+              value={siteId}
+              onChange={handleSiteChange}
+              disabled={isLoadingSites}
+              required
+            >
+              <option value="">{isLoadingSites ? 'Loading sites...' : 'Select a site'}</option>
+              {sites.map((site) => (
+                <option key={site.id} value={site.id}>{site.name}</option>
+              ))}
+            </select>
+            <ChevronDown aria-hidden="true" />
+          </div>
         </div>
 
         {isLoadingChecklist && <p>Loading checklist...</p>}

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/auth.js'
 import { changePassword } from '../services/authService.js'
@@ -17,6 +18,7 @@ function ProfilePage() {
   const { user, updateProfile, logout } = useAuth()
   const navigate = useNavigate()
   const [isEditing, setIsEditing] = useState(false)
+  const [isPasswordOpen, setIsPasswordOpen] = useState(false)
   const [profile, setProfile] = useState({
     username: user.username,
     firstName: user.firstName,
@@ -54,6 +56,13 @@ function ProfilePage() {
   function cancelEditing() {
     setProfileError('')
     setIsEditing(false)
+  }
+
+  function cancelPasswordChange() {
+    setPasswords(emptyPasswords)
+    setPasswordError('')
+    setPasswordSuccess('')
+    setIsPasswordOpen(false)
   }
 
   async function handleProfileSubmit(event) {
@@ -105,139 +114,157 @@ function ProfilePage() {
 
   return (
     <section className="content-page profile-page">
-      <div className="page-heading">
-        <h1>My Account</h1>
-        {!isEditing && (
-          <button type="button" onClick={startEditing}>Edit profile</button>
-        )}
-      </div>
+      <h1 className="page-title">My Account</h1>
 
-      {profileSuccess && <p className="message success" role="status">{profileSuccess}</p>}
+      <div className="account-card">
+        <div className="account-section-header">
+          <h2>Profile details</h2>
+          {!isEditing && (
+            <button className="secondary account-edit-button" type="button" onClick={startEditing}>
+              Edit profile
+            </button>
+          )}
+        </div>
 
-      {!isEditing ? (
-        <div className="panel">
-          <dl className="details">
+        {profileSuccess && <p className="message success" role="status">{profileSuccess}</p>}
+
+        {!isEditing ? (
+          <dl className="account-details">
             <dt>Username</dt><dd>{user.username}</dd>
             <dt>First name</dt><dd>{user.firstName}</dd>
             <dt>Last name</dt><dd>{user.lastName}</dd>
             <dt>Role</dt><dd>{displayRole(user.role)}</dd>
           </dl>
-        </div>
-      ) : (
-        <form className="panel form-stack" onSubmit={handleProfileSubmit}>
-          <h2>Edit profile information</h2>
-          {profileError && <p className="message error" role="alert">{profileError}</p>}
+        ) : (
+          <form className="account-profile-form form-stack" onSubmit={handleProfileSubmit}>
+            {profileError && <p className="message error" role="alert">{profileError}</p>}
 
-          <div className="profile-fields-grid">
+            <div className="profile-fields-grid">
+              <div className="field-group">
+                <label htmlFor="profile-first-name">First name</label>
+                <input
+                  id="profile-first-name"
+                  name="firstName"
+                  value={profile.firstName}
+                  onChange={updateProfileField}
+                  maxLength="100"
+                  required
+                />
+              </div>
+              <div className="field-group">
+                <label htmlFor="profile-last-name">Last name</label>
+                <input
+                  id="profile-last-name"
+                  name="lastName"
+                  value={profile.lastName}
+                  onChange={updateProfileField}
+                  maxLength="100"
+                  required
+                />
+              </div>
+              <div className="field-group">
+                <label htmlFor="profile-username">Username</label>
+                <input
+                  id="profile-username"
+                  name="username"
+                  value={profile.username}
+                  onChange={updateProfileField}
+                  maxLength="100"
+                  required
+                />
+              </div>
+              <div className="field-group">
+                <label htmlFor="profile-role">Role</label>
+                <input id="profile-role" value={displayRole(user.role)} disabled />
+              </div>
+            </div>
+
+            <div className="form-actions">
+              <button type="submit" disabled={isSavingProfile}>
+                {isSavingProfile ? 'Saving...' : 'Save changes'}
+              </button>
+              <button className="secondary" type="button" onClick={cancelEditing}>
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+
+        <button
+          className="account-password-toggle"
+          type="button"
+          aria-expanded={isPasswordOpen}
+          aria-controls="password-change-form"
+          onClick={() => setIsPasswordOpen((current) => !current)}
+        >
+          <span>Password</span>
+          {isPasswordOpen
+            ? <ChevronUp aria-hidden="true" />
+            : <ChevronDown aria-hidden="true" />}
+        </button>
+
+        {isPasswordOpen && (
+          <form
+            id="password-change-form"
+            className="account-password-form form-stack"
+            onSubmit={handlePasswordSubmit}
+          >
+            {passwordError && <p className="message error" role="alert">{passwordError}</p>}
+            {passwordSuccess && <p className="message success" role="status">{passwordSuccess}</p>}
+
             <div className="field-group">
-              <label htmlFor="profile-first-name">First name</label>
+              <label htmlFor="current-password">Current password</label>
               <input
-                id="profile-first-name"
-                name="firstName"
-                value={profile.firstName}
-                onChange={updateProfileField}
-                maxLength="100"
+                id="current-password"
+                name="currentPassword"
+                type="password"
+                autoComplete="current-password"
+                value={passwords.currentPassword}
+                onChange={updatePasswordField}
                 required
               />
             </div>
             <div className="field-group">
-              <label htmlFor="profile-last-name">Last name</label>
+              <label htmlFor="new-password">New password</label>
               <input
-                id="profile-last-name"
-                name="lastName"
-                value={profile.lastName}
-                onChange={updateProfileField}
-                maxLength="100"
+                id="new-password"
+                name="newPassword"
+                type="password"
+                autoComplete="new-password"
+                value={passwords.newPassword}
+                onChange={updatePasswordField}
+                minLength="8"
                 required
               />
             </div>
             <div className="field-group">
-              <label htmlFor="profile-username">Username</label>
+              <label htmlFor="confirm-new-password">Confirm new password</label>
               <input
-                id="profile-username"
-                name="username"
-                value={profile.username}
-                onChange={updateProfileField}
-                maxLength="100"
+                id="confirm-new-password"
+                name="confirmNewPassword"
+                type="password"
+                autoComplete="new-password"
+                value={passwords.confirmNewPassword}
+                onChange={updatePasswordField}
+                minLength="8"
                 required
               />
             </div>
-            <div className="field-group">
-              <label htmlFor="profile-role">Role</label>
-              <input id="profile-role" value={displayRole(user.role)} disabled />
+
+            <div className="form-actions">
+              <button type="submit" disabled={isSavingPassword}>
+                {isSavingPassword ? 'Updating...' : 'Update password'}
+              </button>
             </div>
-          </div>
+          </form>
+        )}
 
-          <div className="form-actions">
-            <button type="submit" disabled={isSavingProfile}>
-              {isSavingProfile ? 'Saving...' : 'Save changes'}
-            </button>
-            <button className="secondary" type="button" onClick={cancelEditing}>
-              Cancel
-            </button>
-          </div>
-        </form>
-      )}
-
-      <form className="panel form-stack" onSubmit={handlePasswordSubmit}>
-        <h2>Change password</h2>
-        {passwordError && <p className="message error" role="alert">{passwordError}</p>}
-        {passwordSuccess && <p className="message success" role="status">{passwordSuccess}</p>}
-
-        <div className="field-group">
-          <label htmlFor="current-password">Current password</label>
-          <input
-            id="current-password"
-            name="currentPassword"
-            type="password"
-            autoComplete="current-password"
-            value={passwords.currentPassword}
-            onChange={updatePasswordField}
-            required
-          />
-        </div>
-        <div className="field-group">
-          <label htmlFor="new-password">New password</label>
-          <input
-            id="new-password"
-            name="newPassword"
-            type="password"
-            autoComplete="new-password"
-            value={passwords.newPassword}
-            onChange={updatePasswordField}
-            minLength="8"
-            required
-          />
-          <small>Use at least 8 characters.</small>
-        </div>
-        <div className="field-group">
-          <label htmlFor="confirm-new-password">Confirm new password</label>
-          <input
-            id="confirm-new-password"
-            name="confirmNewPassword"
-            type="password"
-            autoComplete="new-password"
-            value={passwords.confirmNewPassword}
-            onChange={updatePasswordField}
-            minLength="8"
-            required
-          />
-        </div>
-
-        <div className="form-actions">
-          <button type="submit" disabled={isSavingPassword}>
-            {isSavingPassword ? 'Changing...' : 'Change password'}
+        <div className="account-footer">
+          <button className="account-signout-button" type="button" onClick={handleLogout}>
+            Sign out
           </button>
         </div>
-      </form>
-
-      <section className="panel profile-logout" aria-labelledby="logout-heading">
-        <div>
-          <h2 id="logout-heading">Sign out</h2>
-          <p>Sign out of your RAS Safety Forms account.</p>
-        </div>
-        <button type="button" onClick={handleLogout}>Logout</button>
-      </section>
+      </div>
     </section>
   )
 }

@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { ArrowRight, FilePlus2, Files } from 'lucide-react'
+import { FilePlus2, Files } from 'lucide-react'
 import { useAuth } from '../context/auth.js'
 import { useEffect, useState } from 'react'
 import { getUserSubmissions } from '../services/submissionService.js'
@@ -34,7 +34,7 @@ function FramerHomePage() {
       )}
       <div className="framer-welcome">
         <p>Welcome back</p>
-        <h1>{user.firstName} {user.lastName}</h1>
+        <h1 className="page-title">{user.firstName} {user.lastName}</h1>
       </div>
       <div className="framer-home-actions">
         <Link className="framer-action" to="/framer/safety-form/new">
@@ -42,7 +42,7 @@ function FramerHomePage() {
             <FilePlus2 />
           </span>
           <span className="framer-action-copy">
-            <strong>Complete safety form</strong>
+            <strong>Safety Form</strong>
             <span>Start a new construction safety form</span>
           </span>
         </Link>
@@ -51,7 +51,7 @@ function FramerHomePage() {
             <Files />
           </span>
           <span className="framer-action-copy">
-            <strong>My submissions</strong>
+            <strong>My Submissions</strong>
             <span>View and manage your submitted forms</span>
           </span>
         </Link>

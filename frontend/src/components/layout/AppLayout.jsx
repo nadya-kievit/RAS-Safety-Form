@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/auth.js'
-import { UserRound, ChevronDown } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 
 function AppLayout() {
   const { user } = useAuth()
@@ -20,8 +20,8 @@ function AppLayout() {
           {isFramer ? (
             <>
               <NavLink end to="/framer">Home</NavLink>
-              <NavLink to="/framer/safety-form/new">New form</NavLink>
-              <NavLink to="/framer/submissions">My submissions</NavLink>
+              <NavLink to="/framer/safety-form/new">New Form</NavLink>
+              <NavLink to="/framer/submissions">My Submissions</NavLink>
             </>
           ) : (
             <>
@@ -38,7 +38,10 @@ function AppLayout() {
               aria-label="Open Framer profile"
             >
               <span className="profile-avatar">
-                <UserRound size={25} strokeWidth={2.2} aria-hidden="true" />
+                <svg viewBox="0 0 64 64" aria-hidden="true">
+                  <circle cx="32" cy="22" r="11" />
+                  <path d="M14 53c0-11 8-18 18-18s18 7 18 18H14Z" />
+                </svg>
               </span>
               <ChevronDown className="profile-chevron" size={19} aria-hidden="true" />
               <span className="profile-role">Framer</span>

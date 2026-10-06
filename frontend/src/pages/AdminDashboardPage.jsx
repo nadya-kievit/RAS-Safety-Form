@@ -83,7 +83,7 @@ function AdminDashboardPage() {
   return (
     <section className="content-page admin-dashboard-page">
       <div className="page-heading">
-        <h1>Submissions</h1>
+        <h1 className="page-title">Submissions</h1>
         <Link className="button" to="/admin/users">Manage users</Link>
       </div>
 

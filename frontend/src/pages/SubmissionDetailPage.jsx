@@ -46,7 +46,7 @@ function SubmissionDetailPage() {
 
   return (
     <article className="content-page submission-detail-page">
-      <h1>Safety Form</h1>
+      <h1 className="page-title">Safety Form</h1>
 
       <dl className="details panel">
         <dt>Site</dt>
