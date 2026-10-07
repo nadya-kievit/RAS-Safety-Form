@@ -3,12 +3,16 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/auth.js'
 
 function LoginPage() {
-  const { user, login } = useAuth()
+  const { user, isAuthLoading, login } = useAuth()
   const navigate = useNavigate()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  if (isAuthLoading) {
+    return <div className="auth-loading" role="status">Restoring your session...</div>
+  }
 
   if (user) {
     return <Navigate to={user.role === 'admin' ? '/admin' : '/framer'} replace />

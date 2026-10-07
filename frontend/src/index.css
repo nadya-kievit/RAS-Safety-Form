@@ -630,6 +630,15 @@ button:focus-visible,
   place-items: center;
 }
 
+.auth-loading {
+  display: grid;
+  min-height: 100svh;
+  padding: var(--space-6);
+  color: var(--color-text-muted);
+  background: var(--color-canvas);
+  place-items: center;
+}
+
 .form-stack,
 .field-group {
   display: grid;

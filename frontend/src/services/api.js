@@ -29,6 +29,10 @@ export async function apiRequest(path, options = {}) {
     : await response.text()
 
   if (!response.ok) {
+    if (response.status === 401) {
+      window.dispatchEvent(new Event('ras:authentication-required'))
+    }
+
     const message = data?.message || data || `Request failed (${response.status})`
     throw new ApiError(message, response.status, data)
   }

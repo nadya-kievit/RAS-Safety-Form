@@ -13,7 +13,11 @@ import SubmissionDetailPage from './pages/SubmissionDetailPage.jsx'
 import SubmissionsPage from './pages/SubmissionsPage.jsx'
 
 function HomeRedirect() {
-  const { user } = useAuth()
+  const { user, isAuthLoading } = useAuth()
+
+  if (isAuthLoading) {
+    return <div className="auth-loading" role="status">Restoring your session...</div>
+  }
 
   if (!user) {
     return <Navigate to="/login" replace />

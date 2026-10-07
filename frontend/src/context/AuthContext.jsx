@@ -1,23 +1,39 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import * as authService from '../services/authService.js'
 import { AuthContext } from './auth.js'
 
-const STORAGE_KEY = 'ras-authenticated-user'
-function readStoredUser() {
-  try {
-    const stored = sessionStorage.getItem(STORAGE_KEY)
-    return stored ? JSON.parse(stored) : null
-  } catch {
-    return null
-  }
-}
-
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(readStoredUser)
+  const [user, setUser] = useState(null)
+  const [isAuthLoading, setIsAuthLoading] = useState(true)
+
+  useEffect(() => {
+    let ignore = false
+
+    authService.getCurrentUser()
+      .then((authenticatedUser) => {
+        if (!ignore) setUser(authenticatedUser)
+      })
+      .catch(() => {
+        if (!ignore) setUser(null)
+      })
+      .finally(() => {
+        if (!ignore) setIsAuthLoading(false)
+      })
+
+    return () => { ignore = true }
+  }, [])
+
+  useEffect(() => {
+    function clearExpiredSession() {
+      setUser(null)
+    }
+
+    window.addEventListener('ras:authentication-required', clearExpiredSession)
+    return () => window.removeEventListener('ras:authentication-required', clearExpiredSession)
+  }, [])
 
   async function login(credentials) {
     const authenticatedUser = await authService.login(credentials)
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(authenticatedUser))
     setUser(authenticatedUser)
     return authenticatedUser
   }
@@ -28,21 +44,19 @@ export function AuthProvider({ children }) {
     } catch {
       // Clear local state even when the backend session has already expired.
     } finally {
-      sessionStorage.removeItem(STORAGE_KEY)
       setUser(null)
     }
   }
 
   async function updateProfile(profile) {
     const updatedUser = await authService.updateProfile(profile)
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser))
     setUser(updatedUser)
     return updatedUser
   }
 
   const value = useMemo(
-    () => ({ user, login, logout, updateProfile }),
-    [user],
+    () => ({ user, isAuthLoading, login, logout, updateProfile }),
+    [user, isAuthLoading],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -48,7 +48,15 @@ public class AuthController {
 
     @GetMapping("/me")
     public UserResponse getCurrentUser(HttpServletRequest request) {
-        return userService.getUser(requireUserId(request));
+        UserResponse user = userService.getUser(requireUserId(request));
+        if (!user.active()) {
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                session.invalidate();
+            }
+            throw new AuthenticationException("Authentication required");
+        }
+        return user;
     }
 
     @PatchMapping("/me")
