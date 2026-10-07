@@ -6,6 +6,7 @@ import AdminDashboardPage from './pages/AdminDashboardPage.jsx'
 import AdminUsersPage from './pages/AdminUsersPage.jsx'
 import FramerHomePage from './pages/FramerHomePage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
+import RequiredPasswordChangePage from './pages/RequiredPasswordChangePage.jsx'
 import NewSafetyFormPage from './pages/NewSafetyFormPage.jsx'
 import NotFoundPage from './pages/NotFoundPage.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
@@ -23,6 +24,10 @@ function HomeRedirect() {
     return <Navigate to="/login" replace />
   }
 
+  if (user.mustChangePassword) {
+    return <Navigate to="/change-password" replace />
+  }
+
   return <Navigate to={user.role === 'admin' ? '/admin' : '/framer'} replace />
 }
 
@@ -31,6 +36,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/change-password" element={<RequiredPasswordChangePage />} />
         <Route path="/" element={<HomeRedirect />} />
 
         <Route element={<ProtectedRoute allowedRoles={['framer']} />}>

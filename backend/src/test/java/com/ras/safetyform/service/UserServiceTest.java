@@ -124,6 +124,7 @@ class UserServiceTest {
 
         assertEquals("new.user", response.username());
         assertEquals("framer", response.role());
+        assertEquals(true, response.mustChangePassword());
         assertEquals(true, response.active());
         verify(userRepository).save(org.mockito.ArgumentMatchers.argThat(user ->
                 passwordEncoder.matches("temporary-password", user.getPasswordHash())));

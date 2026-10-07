@@ -35,6 +35,7 @@ public class AuthService {
                 user.getLastName(),
                 user.getUsername(),
                 user.getRole(),
+                user.isMustChangePassword(),
                 user.isActive(),
                 user.getCreatedAt());
     }

@@ -90,7 +90,7 @@ public class UserService {
     }
 
     @Transactional
-    public void changePassword(Integer userId, PasswordChangeRequest request) {
+    public UserResponse changePassword(Integer userId, PasswordChangeRequest request) {
         User user = findUser(userId);
 
         if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
@@ -104,6 +104,13 @@ public class UserService {
         }
 
         user.changePasswordHash(passwordEncoder.encode(request.newPassword()));
+        return toUserResponse(user);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean mustChangePassword(Integer userId) {
+        User user = findUser(userId);
+        return user.isActive() && user.isMustChangePassword();
     }
 
     private User findUser(Integer userId) {
@@ -118,6 +125,7 @@ public class UserService {
                 user.getLastName(),
                 user.getUsername(),
                 user.getRole(),
+                user.isMustChangePassword(),
                 user.isActive(),
                 user.getCreatedAt());
     }

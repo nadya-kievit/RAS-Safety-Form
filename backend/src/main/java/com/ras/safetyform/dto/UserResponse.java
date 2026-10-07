@@ -8,6 +8,7 @@ public record UserResponse(
         String lastName,
         String username,
         String role,
+        boolean mustChangePassword,
         boolean active,
         LocalDateTime createdAt) {
 }

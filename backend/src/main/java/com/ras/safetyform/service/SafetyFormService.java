@@ -273,6 +273,7 @@ public class SafetyFormService {
                 user.getLastName(),
                 user.getUsername(),
                 user.getRole(),
+                user.isMustChangePassword(),
                 user.isActive(),
                 user.getCreatedAt());
         SiteResponse siteResponse = new SiteResponse(

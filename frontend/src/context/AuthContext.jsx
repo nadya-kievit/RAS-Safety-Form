@@ -54,8 +54,14 @@ export function AuthProvider({ children }) {
     return updatedUser
   }
 
+  async function changePassword(passwords) {
+    const updatedUser = await authService.changePassword(passwords)
+    setUser(updatedUser)
+    return updatedUser
+  }
+
   const value = useMemo(
-    () => ({ user, isAuthLoading, login, logout, updateProfile }),
+    () => ({ user, isAuthLoading, login, logout, updateProfile, changePassword }),
     [user, isAuthLoading],
   )
 

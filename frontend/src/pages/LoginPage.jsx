@@ -15,7 +15,9 @@ function LoginPage() {
   }
 
   if (user) {
-    return <Navigate to={user.role === 'admin' ? '/admin' : '/framer'} replace />
+    return <Navigate to={user.mustChangePassword
+      ? '/change-password'
+      : user.role === 'admin' ? '/admin' : '/framer'} replace />
   }
 
   async function handleSubmit(event) {
@@ -25,7 +27,10 @@ function LoginPage() {
 
     try {
       const authenticatedUser = await login({ username, password })
-      navigate(authenticatedUser.role === 'admin' ? '/admin' : '/framer', {
+      const destination = authenticatedUser.mustChangePassword
+        ? '/change-password'
+        : authenticatedUser.role === 'admin' ? '/admin' : '/framer'
+      navigate(destination, {
         replace: true,
       })
     } catch (requestError) {

@@ -161,7 +161,7 @@ function AppLayout() {
               >
                 Submissions
               </NavLink>
-              <NavLink to="/admin/users">Users</NavLink>
+              <NavLink to="/admin/users">Manage Users</NavLink>
               <NavLink to="/admin/profile">My Account</NavLink>
             </>
           )}

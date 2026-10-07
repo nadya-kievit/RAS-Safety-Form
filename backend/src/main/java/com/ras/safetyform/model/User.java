@@ -31,6 +31,9 @@ public class User {
     @Column(nullable = false, length = 20)
     private String role;
 
+    @Column(name = "must_change_password", nullable = false)
+    private boolean mustChangePassword;
+
     @Column(nullable = false)
     private boolean active;
 
@@ -51,6 +54,7 @@ public class User {
         this.username = username;
         this.passwordHash = passwordHash;
         this.role = role;
+        this.mustChangePassword = true;
         this.active = true;
         this.createdAt = LocalDateTime.now();
     }
@@ -83,6 +87,10 @@ public class User {
         return active;
     }
 
+    public boolean isMustChangePassword() {
+        return mustChangePassword;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -95,6 +103,7 @@ public class User {
 
     public void changePasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+        this.mustChangePassword = false;
     }
 
     public void setActive(boolean active) {

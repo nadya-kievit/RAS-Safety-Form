@@ -622,6 +622,20 @@ button:focus-visible,
   margin-top: .5rem;
 }
 
+.required-password-copy {
+  margin: -1.75rem 0 2rem;
+  color: var(--color-text-muted);
+}
+
+button.required-password-signout,
+button.required-password-signout:hover:not(:disabled) {
+  width: 100%;
+  margin-top: var(--space-3);
+  border-color: transparent;
+  color: var(--color-brand);
+  background: transparent;
+}
+
 .auth-page {
   display: grid;
   min-height: 100vh;
@@ -1290,7 +1304,7 @@ button.account-password-toggle:active:not(:disabled) {
 .account-password-form {
   padding: var(--space-4);
   border-radius: var(--radius-sm);
-  background: var(--color-surface-muted);
+  background: var(--color-surface);
 }
 
 .account-password-form button[type="submit"]:hover:not(:disabled) {

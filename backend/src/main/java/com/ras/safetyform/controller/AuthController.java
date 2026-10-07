@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 public class AuthController {
 
-    static final String USER_ID_SESSION_ATTRIBUTE = "authenticatedUserId";
+    public static final String USER_ID_SESSION_ATTRIBUTE = "authenticatedUserId";
 
     private final AuthService authService;
     private final UserService userService;
@@ -67,11 +67,10 @@ public class AuthController {
     }
 
     @PostMapping("/me/password")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void changePassword(
+    public UserResponse changePassword(
             @Valid @RequestBody PasswordChangeRequest passwordChange,
             HttpServletRequest request) {
-        userService.changePassword(requireUserId(request), passwordChange);
+        return userService.changePassword(requireUserId(request), passwordChange);
     }
 
     @PostMapping("/logout")

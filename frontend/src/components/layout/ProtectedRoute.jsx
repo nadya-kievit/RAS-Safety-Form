@@ -12,6 +12,10 @@ function ProtectedRoute({ allowedRoles }) {
     return <Navigate to="/login" replace />
   }
 
+  if (user.mustChangePassword) {
+    return <Navigate to="/change-password" replace />
+  }
+
   if (!allowedRoles.includes(user.role)) {
     return <Navigate to={user.role === 'admin' ? '/admin' : '/framer'} replace />
   }

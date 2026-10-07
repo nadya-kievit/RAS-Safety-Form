@@ -29,8 +29,8 @@ export async function updateProfile(profile) {
   return mapUser(user)
 }
 
-export function changePassword(passwords) {
-  return apiRequest('/auth/me/password', {
+export async function changePassword(passwords) {
+  const user = await apiRequest('/auth/me/password', {
     method: 'POST',
     body: JSON.stringify({
       current_password: passwords.currentPassword,
@@ -38,4 +38,5 @@ export function changePassword(passwords) {
       confirm_new_password: passwords.confirmNewPassword,
     }),
   })
+  return mapUser(user)
 }

@@ -108,10 +108,10 @@ function AdminUsersPage() {
     <section className={`content-page users-page${showCreateForm ? ' create-user-page' : ''}`}>
       <div className="page-heading">
         <div className="page-title-group">
-          <h1 className="page-title">{showCreateForm ? 'Create User' : 'Users'}</h1>
+          <h1 className="page-title">{showCreateForm ? 'Create User' : 'Manage Users'}</h1>
           {showCreateForm && (
             <nav className="page-breadcrumb" aria-label="Breadcrumb">
-              <Link to="/admin/users" onClick={closeCreateForm}>Users</Link>
+              <Link to="/admin/users" onClick={closeCreateForm}>Manage Users</Link>
               <ChevronRight aria-hidden="true" />
               <span aria-current="page">Create User</span>
             </nav>

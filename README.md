@@ -33,3 +33,23 @@ set this server environment variable so browsers only transmit it securely:
 ```properties
 SESSION_COOKIE_SECURE=true
 ```
+
+## First-login password changes
+
+Accounts created by an administrator are marked as requiring a password change.
+The user must replace the temporary password before any other authenticated API
+route or application page can be used.
+
+For an existing database, preserve existing accounts while making future
+accounts require a password change:
+
+```sql
+ALTER TABLE users
+ADD COLUMN must_change_password BOOLEAN NOT NULL DEFAULT FALSE;
+
+ALTER TABLE users
+ALTER COLUMN must_change_password SET DEFAULT TRUE;
+```
+
+The current `backend/sql/schema.sql` already includes the column with the
+correct default for newly created databases.

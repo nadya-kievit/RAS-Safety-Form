@@ -31,6 +31,7 @@ class AuthServiceTest {
         when(user.getUsername()).thenReturn("alex");
         when(user.getPasswordHash()).thenReturn(passwordEncoder.encode("correct-password"));
         when(user.getRole()).thenReturn("framer");
+        when(user.isMustChangePassword()).thenReturn(true);
         when(user.isActive()).thenReturn(true);
         when(user.getCreatedAt()).thenReturn(createdAt);
         when(userRepository.findByUsername("alex")).thenReturn(Optional.of(user));
@@ -41,6 +42,7 @@ class AuthServiceTest {
         assertEquals(1, response.id());
         assertEquals("alex", response.username());
         assertEquals("framer", response.role());
+        assertEquals(true, response.mustChangePassword());
     }
 
     @Test

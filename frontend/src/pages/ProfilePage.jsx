@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/auth.js'
-import { changePassword } from '../services/authService.js'
 
 const emptyPasswords = {
   currentPassword: '',
@@ -15,7 +14,7 @@ function displayRole(role) {
 }
 
 function ProfilePage() {
-  const { user, updateProfile, logout } = useAuth()
+  const { user, updateProfile, changePassword, logout } = useAuth()
   const navigate = useNavigate()
   const [isEditing, setIsEditing] = useState(false)
   const [isPasswordOpen, setIsPasswordOpen] = useState(false)
