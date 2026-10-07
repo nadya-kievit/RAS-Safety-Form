@@ -2595,20 +2595,27 @@ button.account-signout-button:active:not(:disabled) {
     grid-template-columns: 1fr;
   }
 
-  .form-page input[type="date"] {
+  .form-page input[type="date"],
+  .form-page input[type="time"] {
     display: block;
     width: 100%;
+    inline-size: 100%;
     min-width: 0;
     max-width: 100%;
     min-inline-size: 0;
     max-inline-size: 100%;
     overflow: hidden;
+    -webkit-appearance: none;
     appearance: none;
   }
 
   .form-page input[type="date"]::-webkit-date-and-time-value {
     min-width: 0;
     text-align: left;
+  }
+
+  .form-page input[type="time"]::-webkit-date-and-time-value {
+    min-width: 0;
   }
 
   .page-title {
