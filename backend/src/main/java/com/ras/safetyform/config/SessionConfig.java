@@ -14,14 +14,15 @@ public class SessionConfig {
 
     @Bean
     public CookieSerializer cookieSerializer(
-            @Value("${app.session.cookie-secure:false}") boolean secure) {
+            @Value("${app.session.cookie-secure:false}") boolean secure,
+            @Value("${app.session.cookie-same-site:Lax}") String sameSite) {
         DefaultCookieSerializer serializer = new DefaultCookieSerializer();
         serializer.setCookieName("RAS_SESSION");
         serializer.setCookiePath("/");
         serializer.setCookieMaxAge(COOKIE_MAX_AGE_SECONDS);
         serializer.setUseHttpOnlyCookie(true);
         serializer.setUseSecureCookie(secure);
-        serializer.setSameSite("Lax");
+        serializer.setSameSite(sameSite);
         return serializer;
     }
 }

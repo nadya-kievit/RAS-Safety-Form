@@ -15,25 +15,27 @@ function SubmissionList({ submissions, detailBasePath, showWorker = false }) {
   const navigate = useNavigate()
 
   if (submissions.length === 0) {
-    return
+    return <p className="empty-state">No submissions yet.</p>
   }
 
   if (!showWorker) {
     return (
       <div className="submission-list-card">
         {submissions.map((submission) => (
-          <div className="submission-list-row" key={submission.id}>
+          <Link
+            className="submission-list-row"
+            key={submission.id}
+            to={`${detailBasePath}/${submission.id}`}
+            aria-label={`View submission for ${submission.site?.name || `Site ${submission.siteId}`}`}
+          >
             <div>
               <h2>{submission.site?.name || `Site ${submission.siteId}`}</h2>
               <p>{formatDateTime(submission.formDate)}</p>
             </div>
-            <Link
-              className="recent-submission-link"
-              to={`${detailBasePath}/${submission.id}`}
-            >
+            <span className="recent-submission-link">
               View
-            </Link>
-          </div>
+            </span>
+          </Link>
         ))}
       </div>
     )

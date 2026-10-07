@@ -31,6 +31,7 @@ export function mapSubmission(submission) {
     formDate: submission.form_date,
     notes: submission.notes,
     submittedAt: submission.submitted_at,
+    status: submission.status,
     user: mapUser(submission.user),
     site: mapSite(submission.site),
   }

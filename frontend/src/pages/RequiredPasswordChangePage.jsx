@@ -16,7 +16,7 @@ const emptyPasswords = {
 }
 
 function RequiredPasswordChangePage() {
-  const { user, isAuthLoading, changePassword, logout } = useAuth()
+  const { user, isAuthLoading, changePassword } = useAuth()
   const navigate = useNavigate()
   const [passwords, setPasswords] = useState(emptyPasswords)
   const [error, setError] = useState('')
@@ -61,11 +61,6 @@ function RequiredPasswordChangePage() {
     } finally {
       setIsSubmitting(false)
     }
-  }
-
-  async function handleSignOut() {
-    await logout()
-    navigate('/login', { replace: true })
   }
 
   return (

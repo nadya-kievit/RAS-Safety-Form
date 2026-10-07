@@ -1,14 +1,15 @@
 package com.ras.safetyform.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record SafetyFormResponse(
         Integer id,
         Integer userId,
         Integer siteId,
-        LocalDateTime formDate,
+        Instant formDate,
         String notes,
-        LocalDateTime submittedAt,
+        Instant submittedAt,
+        String status,
         UserResponse user,
         SiteResponse site) {
 }

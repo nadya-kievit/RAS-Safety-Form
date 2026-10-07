@@ -7,4 +7,7 @@ public interface PhotoStorageService {
     String createSignedUrl(String objectPath);
 
     void delete(String objectPath);
+
+    /** Throws {@link StorageException} when the configured bucket cannot be reached. */
+    void verifyAvailable();
 }

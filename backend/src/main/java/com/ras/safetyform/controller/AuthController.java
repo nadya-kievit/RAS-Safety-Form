@@ -1,13 +1,16 @@
 package com.ras.safetyform.controller;
 
+import com.ras.safetyform.config.SessionUser;
 import com.ras.safetyform.dto.LoginRequest;
 import com.ras.safetyform.dto.PasswordChangeRequest;
 import com.ras.safetyform.dto.ProfileUpdateRequest;
 import com.ras.safetyform.dto.UserResponse;
 import com.ras.safetyform.service.AuthService;
 import com.ras.safetyform.service.AuthenticationException;
+import com.ras.safetyform.service.LoginRateLimiter;
 import com.ras.safetyform.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -23,32 +26,46 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 public class AuthController {
 
-    public static final String USER_ID_SESSION_ATTRIBUTE = "authenticatedUserId";
-
     private final AuthService authService;
     private final UserService userService;
+    private final LoginRateLimiter loginRateLimiter;
 
-    public AuthController(AuthService authService, UserService userService) {
+    public AuthController(
+            AuthService authService,
+            UserService userService,
+            LoginRateLimiter loginRateLimiter) {
         this.authService = authService;
         this.userService = userService;
+        this.loginRateLimiter = loginRateLimiter;
     }
 
     @PostMapping("/login")
     public UserResponse login(
             @Valid @RequestBody LoginRequest request,
-            HttpServletRequest servletRequest) {
-        UserResponse user = authService.login(request);
-        HttpSession existingSession = servletRequest.getSession(false);
-        if (existingSession != null) {
-            existingSession.invalidate();
+            HttpServletRequest servletRequest,
+            HttpServletResponse servletResponse) {
+        String clientAddress = servletRequest.getRemoteAddr();
+        loginRateLimiter.assertAllowed(clientAddress, request.username());
+
+        UserResponse user;
+        try {
+            user = authService.login(request);
+        } catch (AuthenticationException exception) {
+            loginRateLimiter.recordFailure(clientAddress, request.username());
+            throw exception;
         }
-        servletRequest.getSession(true).setAttribute(USER_ID_SESSION_ATTRIBUTE, user.id());
+        loginRateLimiter.recordSuccess(clientAddress, request.username());
+
+        HttpSession session = SessionUser.signIn(servletRequest, user.id());
+        servletResponse.setHeader(SessionUser.CSRF_HEADER, SessionUser.csrfToken(session));
         return user;
     }
 
     @GetMapping("/me")
-    public UserResponse getCurrentUser(HttpServletRequest request) {
-        UserResponse user = userService.getUser(requireUserId(request));
+    public UserResponse getCurrentUser(
+            HttpServletRequest request,
+            HttpServletResponse response) {
+        UserResponse user = userService.getUser(SessionUser.requireUserId(request));
         if (!user.active()) {
             HttpSession session = request.getSession(false);
             if (session != null) {
@@ -56,6 +73,9 @@ public class AuthController {
             }
             throw new AuthenticationException("Authentication required");
         }
+        response.setHeader(
+                SessionUser.CSRF_HEADER,
+                SessionUser.csrfToken(request.getSession(false)));
         return user;
     }
 
@@ -63,14 +83,14 @@ public class AuthController {
     public UserResponse updateCurrentUser(
             @Valid @RequestBody ProfileUpdateRequest profile,
             HttpServletRequest request) {
-        return userService.updateProfile(requireUserId(request), profile);
+        return userService.updateProfile(SessionUser.requireUserId(request), profile);
     }
 
     @PostMapping("/me/password")
     public UserResponse changePassword(
             @Valid @RequestBody PasswordChangeRequest passwordChange,
             HttpServletRequest request) {
-        return userService.changePassword(requireUserId(request), passwordChange);
+        return userService.changePassword(SessionUser.requireUserId(request), passwordChange);
     }
 
     @PostMapping("/logout")
@@ -80,14 +100,5 @@ public class AuthController {
         if (session != null) {
             session.invalidate();
         }
-    }
-
-    private Integer requireUserId(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        Object userId = session == null ? null : session.getAttribute(USER_ID_SESSION_ATTRIBUTE);
-        if (!(userId instanceof Integer authenticatedUserId)) {
-            throw new AuthenticationException("Authentication required");
-        }
-        return authenticatedUserId;
     }
 }

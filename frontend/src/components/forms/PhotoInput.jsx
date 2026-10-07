@@ -1,46 +1,91 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { X } from 'lucide-react'
+import {
+  MAX_PHOTOS,
+  PHOTO_ACCEPT,
+  photoKey,
+  preparePhoto,
+} from '../../utils/photos.js'
 
-function PhotoPreview({ file }) {
-  const [url] = useState(() => URL.createObjectURL(file))
-
-  useEffect(() => () => URL.revokeObjectURL(url), [url])
+function PhotoPreview({ photo, onRemove }) {
+  const [failed, setFailed] = useState(false)
 
   return (
     <figure>
-      <img src={url} alt={`Preview of ${file.name}`} />
-      <figcaption>{file.name}</figcaption>
+      <div className="photo-preview-frame">
+        {failed ? (
+          <span className="photo-preview-fallback">Preview unavailable</span>
+        ) : (
+          <img
+            src={photo.previewUrl}
+            alt={`Preview of ${photo.file.name}`}
+            onError={() => setFailed(true)}
+          />
+        )}
+        <button
+          className="photo-remove-button"
+          type="button"
+          aria-label={`Remove ${photo.file.name}`}
+          onClick={() => onRemove(photo)}
+        >
+          <X aria-hidden="true" />
+        </button>
+      </div>
+      <figcaption>{photo.file.name}</figcaption>
     </figure>
   )
 }
 
-function PhotoInput({ files, onChange }) {
-  const allowedTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
-  const maximumFileSize = 10 * 1024 * 1024
+/**
+ * Collects up to five photos. Each pick adds to the list, so several photos can be chosen in one
+ * go or across multiple picks, and each can be removed individually.
+ * `photos` is a list of { key, file, previewUrl }; `onChange(photos, errorMessage)` reports edits.
+ */
+function PhotoInput({ photos, onChange, error = '' }) {
+  const latestPhotos = useRef(photos)
 
-  function handleChange(event) {
+  useEffect(() => {
+    latestPhotos.current = photos
+  }, [photos])
+
+  useEffect(() => () => {
+    latestPhotos.current.forEach((photo) => URL.revokeObjectURL(photo.previewUrl))
+  }, [])
+
+  async function handleChange(event) {
     const selected = Array.from(event.target.files || [])
-    const invalidFile = selected.find((file) => !allowedTypes.has(file.type))
+    // Reset so choosing the same photo again (after removing it) still fires a change.
+    event.target.value = ''
+    if (selected.length === 0) return
 
-    if (invalidFile) {
-      event.target.value = ''
-      onChange([], `${invalidFile.name} is not a supported JPEG, PNG, WebP, or GIF image.`)
+    const prepared = await Promise.all(selected.map(preparePhoto))
+    const failure = prepared.find((result) => result.error)
+    if (failure) {
+      onChange(photos, failure.error)
       return
     }
 
-    const oversizedFile = selected.find((file) => file.size > maximumFileSize)
-    if (oversizedFile) {
-      event.target.value = ''
-      onChange([], `${oversizedFile.name} is larger than 10 MB.`)
+    const known = new Set(photos.map((photo) => photo.key))
+    const additions = []
+    prepared.forEach(({ file }) => {
+      const key = photoKey(file)
+      if (known.has(key)) return
+      known.add(key)
+      additions.push({ key, file, previewUrl: URL.createObjectURL(file) })
+    })
+
+    if (photos.length + additions.length > MAX_PHOTOS) {
+      additions.forEach((photo) => URL.revokeObjectURL(photo.previewUrl))
+      onChange(photos, `You can upload a maximum of ${MAX_PHOTOS} photos.`)
       return
     }
 
-    if (selected.length > 5) {
-      event.target.value = ''
-      onChange([], 'You can upload a maximum of 5 photos.')
-      return
-    }
+    onChange([...photos, ...additions], '')
+  }
 
-    onChange(selected, '')
+  function handleRemove(photo) {
+    URL.revokeObjectURL(photo.previewUrl)
+    onChange(photos.filter((item) => item.key !== photo.key), '')
   }
 
   return (
@@ -49,18 +94,18 @@ function PhotoInput({ files, onChange }) {
       <input
         id="photos"
         type="file"
-        accept="image/jpeg,image/png,image/webp,image/gif"
+        accept={PHOTO_ACCEPT}
         multiple
         onChange={handleChange}
       />
-      <small>Up to 5 JPEG, PNG, WebP, or GIF photos, 10 MB each.</small>
-      {files.length > 0 && (
+      <small>
+        At least 1 and up to {MAX_PHOTOS} JPEG, PNG, WebP, or GIF photos, 10 MB each.
+      </small>
+      {error && <p className="message error" role="alert">{error}</p>}
+      {photos.length > 0 && (
         <div className="photo-previews" aria-label="Selected photo previews">
-          {files.map((file) => (
-            <PhotoPreview
-              key={`${file.name}-${file.lastModified}`}
-              file={file}
-            />
+          {photos.map((photo) => (
+            <PhotoPreview key={photo.key} photo={photo} onRemove={handleRemove} />
           ))}
         </div>
       )}

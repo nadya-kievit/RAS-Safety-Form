@@ -9,7 +9,7 @@ import com.ras.safetyform.dto.LoginRequest;
 import com.ras.safetyform.dto.UserResponse;
 import com.ras.safetyform.model.User;
 import com.ras.safetyform.repository.UserRepository;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -24,7 +24,7 @@ class AuthServiceTest {
     @Test
     void loginReturnsUserWhenPasswordMatches() {
         User user = mock(User.class);
-        LocalDateTime createdAt = LocalDateTime.of(2026, 1, 2, 3, 4);
+        Instant createdAt = Instant.parse("2026-01-02T03:04:00Z");
         when(user.getId()).thenReturn(1);
         when(user.getFirstName()).thenReturn("Alex");
         when(user.getLastName()).thenReturn("Framer");
@@ -70,14 +70,29 @@ class AuthServiceTest {
     }
 
     @Test
-    void loginRejectsInactiveUser() {
+    void loginExplainsDeactivationOnlyAfterTheCorrectPassword() {
         User user = mock(User.class);
+        when(user.getPasswordHash()).thenReturn(passwordEncoder.encode("correct-password"));
+        when(user.isActive()).thenReturn(false);
+        when(userRepository.findByUsername("alex")).thenReturn(Optional.of(user));
+
+        AuthorizationException exception = assertThrows(
+                AuthorizationException.class,
+                () -> authService.login(new LoginRequest("alex", "correct-password")));
+
+        assertEquals("Your account has been deactivated", exception.getMessage());
+    }
+
+    @Test
+    void loginDoesNotRevealDeactivationForAWrongPassword() {
+        User user = mock(User.class);
+        when(user.getPasswordHash()).thenReturn(passwordEncoder.encode("correct-password"));
         when(user.isActive()).thenReturn(false);
         when(userRepository.findByUsername("alex")).thenReturn(Optional.of(user));
 
         AuthenticationException exception = assertThrows(
                 AuthenticationException.class,
-                () -> authService.login(new LoginRequest("alex", "correct-password")));
+                () -> authService.login(new LoginRequest("alex", "wrong-password")));
 
         assertEquals("Invalid username or password", exception.getMessage());
     }

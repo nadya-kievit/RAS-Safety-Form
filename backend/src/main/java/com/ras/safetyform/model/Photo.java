@@ -9,7 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "photos")
@@ -36,7 +36,7 @@ public class Photo {
     private Integer fileSize;
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     protected Photo() {
     }
@@ -47,7 +47,7 @@ public class Photo {
             String filename,
             String mimeType,
             Integer fileSize,
-            LocalDateTime createdAt) {
+            Instant createdAt) {
         this.safetyForm = safetyForm;
         this.storagePath = storagePath;
         this.filename = filename;
@@ -80,7 +80,7 @@ public class Photo {
         return fileSize;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 }

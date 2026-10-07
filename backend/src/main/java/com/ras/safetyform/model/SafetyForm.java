@@ -9,11 +9,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "safety_forms")
 public class SafetyForm {
+
+    public static final String STATUS_SUBMITTED = "submitted";
+    public static final String STATUS_REVIEWED = "reviewed";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,13 +31,16 @@ public class SafetyForm {
     private Site site;
 
     @Column(name = "form_date", nullable = false)
-    private LocalDateTime formDate;
+    private Instant formDate;
 
     @Column(columnDefinition = "TEXT")
     private String notes;
 
     @Column(name = "submitted_at", nullable = false)
-    private LocalDateTime submittedAt;
+    private Instant submittedAt;
+
+    @Column(nullable = false, length = 20)
+    private String status;
 
     protected SafetyForm() {
     }
@@ -42,14 +48,15 @@ public class SafetyForm {
     public SafetyForm(
             User user,
             Site site,
-            LocalDateTime formDate,
+            Instant formDate,
             String notes,
-            LocalDateTime submittedAt) {
+            Instant submittedAt) {
         this.user = user;
         this.site = site;
         this.formDate = formDate;
         this.notes = notes;
         this.submittedAt = submittedAt;
+        this.status = STATUS_SUBMITTED;
     }
 
     public Integer getId() {
@@ -64,7 +71,7 @@ public class SafetyForm {
         return site;
     }
 
-    public LocalDateTime getFormDate() {
+    public Instant getFormDate() {
         return formDate;
     }
 
@@ -72,8 +79,15 @@ public class SafetyForm {
         return notes;
     }
 
-    public LocalDateTime getSubmittedAt() {
+    public Instant getSubmittedAt() {
         return submittedAt;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 }

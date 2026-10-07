@@ -85,22 +85,21 @@ function FramerHomePage() {
             <p className="empty-state">No submissions yet.</p>
           ) : (
             submissions.map((submission) => (
-              <div
+              <Link
                 className="recent-submission-row"
                 key={submission.id}
+                to={`/framer/submissions/${submission.id}`}
+                aria-label={`View submission for ${submission.site?.name || `Site ${submission.siteId}`}`}
               >
                 <div>
                   <h3>{submission.site?.name || `Site ${submission.siteId}`}</h3>
                   <p>{formatDateTime(submission.formDate)}</p>
                 </div>
 
-                <Link
-                  to={`/framer/submissions/${submission.id}`}
-                  className="recent-submission-link"
-                >
+                <span className="recent-submission-link">
                   View
-                </Link>
-              </div>
+                </span>
+              </Link>
             ))
           )}
         </div>

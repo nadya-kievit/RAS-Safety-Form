@@ -1,11 +1,9 @@
 package com.ras.safetyform.config;
 
-import com.ras.safetyform.controller.AuthController;
 import com.ras.safetyform.service.AuthorizationException;
 import com.ras.safetyform.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -27,12 +25,8 @@ public class PasswordChangeRequiredInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        HttpSession session = request.getSession(false);
-        Object userId = session == null
-                ? null
-                : session.getAttribute(AuthController.USER_ID_SESSION_ATTRIBUTE);
-        if (userId instanceof Integer authenticatedUserId
-                && userService.mustChangePassword(authenticatedUserId)) {
+        Integer userId = SessionUser.currentUserId(request);
+        if (userId != null && userService.mustChangePassword(userId)) {
             throw new AuthorizationException("Password change required");
         }
 
@@ -40,11 +34,11 @@ public class PasswordChangeRequiredInterceptor implements HandlerInterceptor {
     }
 
     private boolean isPasswordChangeRoute(HttpServletRequest request) {
-        String path = request.getRequestURI().substring(request.getContextPath().length());
+        String path = ApiPaths.relativePath(request);
         String method = request.getMethod();
-        return ("/auth/login".equals(path) && "POST".equals(method))
-                || ("/auth/logout".equals(path) && "POST".equals(method))
-                || ("/auth/me".equals(path) && "GET".equals(method))
-                || ("/auth/me/password".equals(path) && "POST".equals(method));
+        return (ApiPaths.LOGIN.equals(path) && "POST".equals(method))
+                || (ApiPaths.LOGOUT.equals(path) && "POST".equals(method))
+                || ((ApiPaths.PREFIX + "/auth/me").equals(path) && "GET".equals(method))
+                || ((ApiPaths.PREFIX + "/auth/me/password").equals(path) && "POST".equals(method));
     }
 }

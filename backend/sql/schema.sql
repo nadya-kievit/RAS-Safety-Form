@@ -7,7 +7,7 @@ CREATE TABLE users (
     role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'framer')),
     must_change_password BOOLEAN NOT NULL DEFAULT TRUE,
     active BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 
@@ -34,7 +34,7 @@ CREATE TABLE sites (
     name VARCHAR(150) NOT NULL,
     safety_checklist_id INTEGER NOT NULL,
     active BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_site_checklist
         FOREIGN KEY (safety_checklist_id)
@@ -46,9 +46,13 @@ CREATE TABLE safety_forms (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL,
     site_id INTEGER NOT NULL,
-    form_date TIMESTAMP NOT NULL,
+    form_date TIMESTAMPTZ NOT NULL,
     notes TEXT,
-    submitted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    submitted_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(20) NOT NULL DEFAULT 'submitted',
+
+    CONSTRAINT chk_safety_forms_status
+        CHECK (status IN ('submitted', 'reviewed')),
 
     CONSTRAINT fk_safety_form_user
         FOREIGN KEY (user_id)
@@ -67,13 +71,20 @@ CREATE TABLE photos (
     filename VARCHAR(255) NOT NULL,
     mime_type VARCHAR(100) NOT NULL,
     file_size INTEGER NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_photo_form
         FOREIGN KEY (safety_form_id)
         REFERENCES safety_forms(id)
         ON DELETE CASCADE
 );
+
+
+CREATE INDEX idx_safety_forms_user_id ON safety_forms (user_id);
+CREATE INDEX idx_safety_forms_form_date ON safety_forms (form_date);
+CREATE INDEX idx_safety_forms_site_id ON safety_forms (site_id);
+CREATE INDEX idx_photos_safety_form_id ON photos (safety_form_id);
+CREATE INDEX idx_sites_safety_checklist_id ON sites (safety_checklist_id);
 
 
 -- Persistent authentication sessions used by Spring Session JDBC.

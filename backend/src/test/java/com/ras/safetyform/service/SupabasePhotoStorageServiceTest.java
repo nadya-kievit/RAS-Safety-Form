@@ -20,6 +20,7 @@ class SupabasePhotoStorageServiceTest {
 
     private HttpServer server;
     private final List<RequestDetails> requests = new ArrayList<>();
+    private int failWith = 0;
 
     @BeforeEach
     void startServer() throws IOException {
@@ -53,6 +54,33 @@ class SupabasePhotoStorageServiceTest {
         assertTrue(requests.get(2).body().contains("safety-forms/21/photo.png"));
     }
 
+    @Test
+    void verifiesTheBucketIsReachable() {
+        SupabasePhotoStorageService storage = storage();
+
+        storage.verifyAvailable();
+
+        assertEquals("/storage/v1/bucket/safety%20photos", requests.getFirst().path());
+        assertEquals("sb_secret_test-value", requests.getFirst().apiKey());
+    }
+
+    @Test
+    void reportsStorageUnavailableWhenTheBucketRequestFails() {
+        failWith = 503;
+
+        org.junit.jupiter.api.Assertions.assertThrows(
+                StorageException.class,
+                () -> storage().verifyAvailable());
+    }
+
+    private SupabasePhotoStorageService storage() {
+        SupabaseStorageProperties properties = new SupabaseStorageProperties();
+        properties.setUrl("http://127.0.0.1:" + server.getAddress().getPort() + "/rest/v1/");
+        properties.setSecretKey("sb_secret_test-value");
+        properties.setBucket("safety photos");
+        return new SupabasePhotoStorageService(properties);
+    }
+
     private void handleRequest(HttpExchange exchange) throws IOException {
         String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
         requests.add(new RequestDetails(
@@ -66,7 +94,7 @@ class SupabasePhotoStorageServiceTest {
                         .getBytes(StandardCharsets.UTF_8)
                 : "{}".getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().add("Content-Type", "application/json");
-        exchange.sendResponseHeaders(200, response.length);
+        exchange.sendResponseHeaders(failWith == 0 ? 200 : failWith, response.length);
         exchange.getResponseBody().write(response);
         exchange.close();
     }

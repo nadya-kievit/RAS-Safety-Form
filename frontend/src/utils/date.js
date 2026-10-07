@@ -16,9 +16,10 @@ export function isFutureLocalDateTime(date, time) {
   return new Date(`${date}T${time}`).getTime() > Date.now()
 }
 
-export function toLocalDateTimeValue(date, time) {
+// The form's date and time are entered in the user's local time zone; send an exact instant.
+export function toInstantValue(date, time) {
   if (!date || !time) return ''
-  return `${date}T${time}:00`
+  return new Date(`${date}T${time}:00`).toISOString()
 }
 
 export function formatDate(value) {

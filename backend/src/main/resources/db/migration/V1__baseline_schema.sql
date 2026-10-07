@@ -1,0 +1,118 @@
+-- Baseline of the schema as originally maintained in sql/schema.sql.
+-- Databases created from that script are baselined at this version by Flyway
+-- (spring.flyway.baseline-on-migrate), so this file only runs on empty databases.
+
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'framer')),
+    must_change_password BOOLEAN NOT NULL DEFAULT TRUE,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE safety_checklists (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(150) NOT NULL
+);
+
+
+CREATE TABLE safety_checklist_items (
+    id SERIAL PRIMARY KEY,
+    safety_checklist_id INTEGER NOT NULL,
+    item TEXT NOT NULL,
+
+    CONSTRAINT fk_checklist_item_checklist
+        FOREIGN KEY (safety_checklist_id)
+        REFERENCES safety_checklists(id)
+        ON DELETE CASCADE
+);
+
+
+CREATE TABLE sites (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    safety_checklist_id INTEGER NOT NULL,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_site_checklist
+        FOREIGN KEY (safety_checklist_id)
+        REFERENCES safety_checklists(id)
+);
+
+
+CREATE TABLE safety_forms (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    site_id INTEGER NOT NULL,
+    form_date TIMESTAMP NOT NULL,
+    notes TEXT,
+    submitted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_safety_form_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id),
+
+    CONSTRAINT fk_safety_form_site
+        FOREIGN KEY (site_id)
+        REFERENCES sites(id)
+);
+
+
+CREATE TABLE photos (
+    id SERIAL PRIMARY KEY,
+    safety_form_id INTEGER NOT NULL,
+    storage_path TEXT NOT NULL,
+    filename VARCHAR(255) NOT NULL,
+    mime_type VARCHAR(100) NOT NULL,
+    file_size INTEGER NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_photo_form
+        FOREIGN KEY (safety_form_id)
+        REFERENCES safety_forms(id)
+        ON DELETE CASCADE
+);
+
+
+-- Persistent authentication sessions used by Spring Session JDBC.
+-- These definitions are based on Spring Session's PostgreSQL schema.
+CREATE TABLE SPRING_SESSION (
+    PRIMARY_ID CHAR(36) NOT NULL,
+    SESSION_ID CHAR(36) NOT NULL,
+    CREATION_TIME BIGINT NOT NULL,
+    LAST_ACCESS_TIME BIGINT NOT NULL,
+    MAX_INACTIVE_INTERVAL INT NOT NULL,
+    EXPIRY_TIME BIGINT NOT NULL,
+    PRINCIPAL_NAME VARCHAR(100),
+
+    CONSTRAINT SPRING_SESSION_PK PRIMARY KEY (PRIMARY_ID)
+);
+
+CREATE UNIQUE INDEX SPRING_SESSION_IX1
+    ON SPRING_SESSION (SESSION_ID);
+
+CREATE INDEX SPRING_SESSION_IX2
+    ON SPRING_SESSION (EXPIRY_TIME);
+
+CREATE INDEX SPRING_SESSION_IX3
+    ON SPRING_SESSION (PRINCIPAL_NAME);
+
+CREATE TABLE SPRING_SESSION_ATTRIBUTES (
+    SESSION_PRIMARY_ID CHAR(36) NOT NULL,
+    ATTRIBUTE_NAME VARCHAR(200) NOT NULL,
+    ATTRIBUTE_BYTES BYTEA NOT NULL,
+
+    CONSTRAINT SPRING_SESSION_ATTRIBUTES_PK
+        PRIMARY KEY (SESSION_PRIMARY_ID, ATTRIBUTE_NAME),
+
+    CONSTRAINT SPRING_SESSION_ATTRIBUTES_FK
+        FOREIGN KEY (SESSION_PRIMARY_ID)
+        REFERENCES SPRING_SESSION(PRIMARY_ID)
+        ON DELETE CASCADE
+);

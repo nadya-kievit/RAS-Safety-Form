@@ -24,9 +24,12 @@ public class AuthService {
         User user = userRepository.findByUsername(request.username())
                 .orElseThrow(this::invalidCredentials);
 
-        if (!user.isActive()
-                || !passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             throw invalidCredentials();
+        }
+        // Only revealed after the correct password, so usernames cannot be probed.
+        if (!user.isActive()) {
+            throw new AuthorizationException("Your account has been deactivated");
         }
 
         return new UserResponse(

@@ -1,13 +1,21 @@
 import { apiRequest } from './api.js'
 import { mapChecklist, mapPhoto, mapSubmission } from './mappers.js'
 
-export async function submitSafetyForm({ userId, siteId, formDate, notes, photos }) {
+export async function submitSafetyForm({
+  userId,
+  siteId,
+  formDate,
+  notes,
+  checkedItemIds,
+  photos,
+}) {
   const formData = new FormData()
   formData.append('submission', new Blob([JSON.stringify({
     user_id: userId,
     site_id: siteId,
     form_date: formDate,
     notes: notes || null,
+    checked_item_ids: checkedItemIds,
   })], { type: 'application/json' }))
   photos.forEach((file) => formData.append('photos', file))
 
@@ -29,6 +37,10 @@ export async function getAllSubmissions(filters = {}) {
   if (filters.userId) params.set('user_id', filters.userId)
   if (filters.startDate) params.set('start_date', filters.startDate)
   if (filters.endDate) params.set('end_date', filters.endDate)
+  if (filters.startDate || filters.endDate) {
+    // Calendar-date filters are interpreted in the admin's own time zone.
+    params.set('time_zone', Intl.DateTimeFormat().resolvedOptions().timeZone)
+  }
   const query = params.size ? `?${params.toString()}` : ''
   const submissions = await apiRequest(`/safety-forms${query}`)
   return submissions.map(mapSubmission)
@@ -47,4 +59,12 @@ export async function getSubmissionDetail(submissionId) {
   ])
 
   return { ...submission, checklist, photos }
+}
+
+export async function setSubmissionStatus(submissionId, status) {
+  const submission = await apiRequest(`/safety-forms/${submissionId}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  })
+  return mapSubmission(submission)
 }

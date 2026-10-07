@@ -3,6 +3,7 @@ import AppLayout from './components/layout/AppLayout.jsx'
 import ProtectedRoute from './components/layout/ProtectedRoute.jsx'
 import { useAuth } from './context/auth.js'
 import AdminDashboardPage from './pages/AdminDashboardPage.jsx'
+import AdminSitesPage from './pages/AdminSitesPage.jsx'
 import AdminUsersPage from './pages/AdminUsersPage.jsx'
 import FramerHomePage from './pages/FramerHomePage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
@@ -56,6 +57,7 @@ function App() {
           <Route element={<AppLayout />}>
             <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="/admin/users" element={<AdminUsersPage />} />
+            <Route path="/admin/sites" element={<AdminSitesPage />} />
             <Route path="/admin/profile" element={<ProfilePage />} />
             <Route
               path="/admin/submissions/:submissionId"

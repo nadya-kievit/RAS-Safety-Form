@@ -107,6 +107,18 @@ public class SupabasePhotoStorageService implements PhotoStorageService {
         }
     }
 
+    @Override
+    public void verifyAvailable() {
+        try {
+            client.get()
+                    .uri(URI.create(storageApiUrl + "/bucket/" + encode(properties.getBucket())))
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (RestClientException exception) {
+            throw new StorageException("Photo storage is unavailable", exception);
+        }
+    }
+
     private URI objectUri(String operation, String objectPath) {
         return URI.create(storageApiUrl
                 + operation

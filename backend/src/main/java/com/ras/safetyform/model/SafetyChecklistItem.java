@@ -28,6 +28,11 @@ public class SafetyChecklistItem {
     protected SafetyChecklistItem() {
     }
 
+    public SafetyChecklistItem(SafetyChecklist checklist, String item) {
+        this.checklist = checklist;
+        this.item = item;
+    }
+
     public Integer getId() {
         return id;
     }
@@ -38,5 +43,9 @@ public class SafetyChecklistItem {
 
     public String getItem() {
         return item;
+    }
+
+    public void setItem(String item) {
+        this.item = item;
     }
 }

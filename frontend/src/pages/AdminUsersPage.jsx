@@ -203,6 +203,8 @@ function AdminUsersPage() {
             </div>
           </div>
 
+          <PasswordRequirements />
+
           <div className="two-column-form password-fields-grid">
             <div className="field-group">
               <label htmlFor="new-user-password">Temporary password</label>
@@ -231,7 +233,6 @@ function AdminUsersPage() {
               />
             </div>
           </div>
-          <PasswordRequirements />
 
           <div className="form-actions">
             <button type="submit" disabled={isCreating}>

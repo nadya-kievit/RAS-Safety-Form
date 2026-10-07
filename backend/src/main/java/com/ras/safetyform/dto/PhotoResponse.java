@@ -1,6 +1,6 @@
 package com.ras.safetyform.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record PhotoResponse(
         Integer id,
@@ -10,5 +10,5 @@ public record PhotoResponse(
         String mimeType,
         Integer fileSize,
         String viewUrl,
-        LocalDateTime createdAt) {
+        Instant createdAt) {
 }

@@ -12,7 +12,7 @@ import com.ras.safetyform.dto.UserResponse;
 import com.ras.safetyform.dto.UserCreateRequest;
 import com.ras.safetyform.model.User;
 import com.ras.safetyform.repository.UserRepository;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -35,7 +35,7 @@ class UserServiceTest {
         when(user.getFirstName()).thenReturn("New");
         when(user.getLastName()).thenReturn("Name");
         when(user.getRole()).thenReturn("admin");
-        when(user.getCreatedAt()).thenReturn(LocalDateTime.of(2026, 1, 1, 12, 0));
+        when(user.getCreatedAt()).thenReturn(Instant.parse("2026-01-01T12:00:00Z"));
         when(userRepository.findById(7)).thenReturn(Optional.of(user));
 
         UserResponse response = userService.updateProfile(
@@ -161,5 +161,42 @@ class UserServiceTest {
         User user = mock(User.class);
         when(user.getPasswordHash()).thenReturn(passwordEncoder.encode(password));
         return user;
+    }
+
+    @Test
+    void usersCanReadThemselvesButNotOthersUnlessAdmin() {
+        User self = userWithPassword("password");
+        User other = userWithPassword("password");
+        User framer = mock(User.class);
+        when(framer.isActive()).thenReturn(true);
+        when(framer.getRole()).thenReturn("framer");
+        when(userRepository.findById(7)).thenReturn(Optional.of(framer));
+        when(userRepository.findById(8)).thenReturn(Optional.of(other));
+        when(userRepository.findById(9)).thenReturn(Optional.of(self));
+
+        userService.getUserForViewer(7, 7);
+        assertThrows(AuthorizationException.class, () -> userService.getUserForViewer(8, 7));
+    }
+
+    @Test
+    void administratorsCanReadAnyUser() {
+        User admin = mock(User.class);
+        when(admin.isActive()).thenReturn(true);
+        when(admin.getRole()).thenReturn("admin");
+        User target = userWithPassword("password");
+        when(userRepository.findById(1)).thenReturn(Optional.of(admin));
+        when(userRepository.findById(8)).thenReturn(Optional.of(target));
+
+        userService.getUserForViewer(8, 1);
+    }
+
+    @Test
+    void deactivatedAdministratorsLoseAdminAccess() {
+        User admin = mock(User.class);
+        when(admin.isActive()).thenReturn(false);
+        when(admin.getRole()).thenReturn("admin");
+        when(userRepository.findById(1)).thenReturn(Optional.of(admin));
+
+        assertThrows(AuthorizationException.class, () -> userService.requireAdmin(1));
     }
 }

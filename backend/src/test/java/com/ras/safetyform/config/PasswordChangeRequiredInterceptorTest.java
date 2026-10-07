@@ -6,7 +6,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.ras.safetyform.controller.AuthController;
 import com.ras.safetyform.service.AuthorizationException;
 import com.ras.safetyform.service.UserService;
 import org.junit.jupiter.api.Test;
@@ -21,7 +20,7 @@ class PasswordChangeRequiredInterceptorTest {
 
     @Test
     void blocksOtherRoutesUntilPasswordIsChanged() {
-        MockHttpServletRequest request = authenticatedRequest("GET", "/users");
+        MockHttpServletRequest request = authenticatedRequest("GET", "/api/users");
         when(userService.mustChangePassword(7)).thenReturn(true);
 
         assertThrows(
@@ -36,7 +35,7 @@ class PasswordChangeRequiredInterceptorTest {
     void allowsRequiredPasswordChangeEndpoint() {
         MockHttpServletRequest request = authenticatedRequest(
                 "POST",
-                "/auth/me/password");
+                "/api/auth/me/password");
 
         assertTrue(interceptor.preHandle(
                 request,
@@ -47,7 +46,7 @@ class PasswordChangeRequiredInterceptorTest {
 
     @Test
     void allowsNormalRoutesAfterPasswordIsChanged() {
-        MockHttpServletRequest request = authenticatedRequest("GET", "/users");
+        MockHttpServletRequest request = authenticatedRequest("GET", "/api/users");
         when(userService.mustChangePassword(7)).thenReturn(false);
 
         assertTrue(interceptor.preHandle(
@@ -56,10 +55,21 @@ class PasswordChangeRequiredInterceptorTest {
                 new Object()));
     }
 
+    @Test
+    void allowsLoginAndLogoutWithoutLookingUpTheUser() {
+        for (String path : new String[] {"/api/auth/login", "/api/auth/logout"}) {
+            assertTrue(interceptor.preHandle(
+                    authenticatedRequest("POST", path),
+                    new MockHttpServletResponse(),
+                    new Object()));
+        }
+        verifyNoInteractions(userService);
+    }
+
     private MockHttpServletRequest authenticatedRequest(String method, String path) {
         MockHttpServletRequest request = new MockHttpServletRequest(method, path);
         request.getSession(true).setAttribute(
-                AuthController.USER_ID_SESSION_ATTRIBUTE,
+                SessionUser.USER_ID_ATTRIBUTE,
                 7);
         return request;
     }

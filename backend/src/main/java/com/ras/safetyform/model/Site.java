@@ -9,7 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "sites")
@@ -30,9 +30,16 @@ public class Site {
     private boolean active;
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     protected Site() {
+    }
+
+    public Site(String name, SafetyChecklist checklist) {
+        this.name = name;
+        this.checklist = checklist;
+        this.active = true;
+        this.createdAt = Instant.now();
     }
 
     public Integer getId() {
@@ -51,7 +58,19 @@ public class Site {
         return active;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public void setChecklist(SafetyChecklist checklist) {
+        this.checklist = checklist;
     }
 }

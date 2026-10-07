@@ -9,7 +9,7 @@ import { submitSafetyForm } from '../services/submissionService.js'
 import {
   currentTimeInputValue,
   isFutureLocalDateTime,
-  toLocalDateTimeValue,
+  toInstantValue,
   todayInputValue,
 } from '../utils/date.js'
 
@@ -97,10 +97,9 @@ function NewSafetyFormPage() {
     setIsLoadingChecklist(Boolean(nextSiteId))
   }
 
-  function handlePhotoChange(selectedFiles, validationError) {
-    setPhotos(selectedFiles)
+  function handlePhotoChange(selectedPhotos, validationError) {
+    setPhotos(selectedPhotos)
     setPhotoError(validationError)
-    setError(validationError)
   }
 
   async function handleSubmit(event) {
@@ -120,8 +119,11 @@ function NewSafetyFormPage() {
       return
     }
 
-    if (photoError) {
-      showValidationError(photoError, document.getElementById('photos'))
+    if (photos.length === 0) {
+      showValidationError(
+        'Add at least one photo before submitting.',
+        document.getElementById('photos'),
+      )
       return
     }
 
@@ -143,9 +145,10 @@ function NewSafetyFormPage() {
       await submitSafetyForm({
         userId: user.id,
         siteId: Number(siteId),
-        formDate: toLocalDateTimeValue(date, time),
+        formDate: toInstantValue(date, time),
         notes,
-        photos,
+        checkedItemIds: Array.from(checkedIds),
+        photos: photos.map((photo) => photo.file),
       })
 
       navigate('/framer', {
@@ -230,7 +233,7 @@ function NewSafetyFormPage() {
           />
         </div>
 
-        <PhotoInput files={photos} onChange={handlePhotoChange} />
+        <PhotoInput photos={photos} onChange={handlePhotoChange} error={photoError} />
 
         <div className="field-group">
           <label htmlFor="notes">Notes (optional)</label>

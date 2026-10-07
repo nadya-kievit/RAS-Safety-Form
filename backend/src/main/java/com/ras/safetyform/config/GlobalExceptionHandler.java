@@ -6,8 +6,9 @@ import com.ras.safetyform.service.AuthorizationException;
 import com.ras.safetyform.service.InvalidRequestException;
 import com.ras.safetyform.service.ResourceNotFoundException;
 import com.ras.safetyform.service.StorageException;
+import com.ras.safetyform.service.TooManyRequestsException;
 import jakarta.servlet.http.HttpServletRequest;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -49,6 +50,17 @@ public class GlobalExceptionHandler {
             InvalidRequestException exception,
             HttpServletRequest request) {
         return error(HttpStatus.BAD_REQUEST, exception.getMessage(), request, Map.of());
+    }
+
+    @ExceptionHandler(TooManyRequestsException.class)
+    public ResponseEntity<ApiError> handleTooManyRequests(
+            TooManyRequestsException exception,
+            HttpServletRequest request) {
+        ResponseEntity<ApiError> response = error(
+                HttpStatus.TOO_MANY_REQUESTS, exception.getMessage(), request, Map.of());
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header("Retry-After", String.valueOf(exception.getRetryAfterSeconds()))
+                .body(response.getBody());
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
@@ -104,7 +116,7 @@ public class GlobalExceptionHandler {
             HttpServletRequest request,
             Map<String, String> validationErrors) {
         ApiError body = new ApiError(
-                LocalDateTime.now(),
+                Instant.now(),
                 status.value(),
                 status.getReasonPhrase(),
                 message,

@@ -1,19 +1,24 @@
 package com.ras.safetyform.controller;
 
+import com.ras.safetyform.config.SessionUser;
 import com.ras.safetyform.dto.PhotoResponse;
 import com.ras.safetyform.dto.SafetyFormCreateRequest;
 import com.ras.safetyform.dto.SafetyFormResponse;
-import com.ras.safetyform.service.AuthenticationException;
+import com.ras.safetyform.dto.SubmissionStatusRequest;
+import com.ras.safetyform.service.InvalidRequestException;
 import com.ras.safetyform.service.SafetyFormService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import java.time.DateTimeException;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.List;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,13 +39,6 @@ public class SafetyFormController {
         this.safetyFormService = safetyFormService;
     }
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public SafetyFormResponse createSafetyForm(
-            @Valid @RequestBody SafetyFormCreateRequest request) {
-        return safetyFormService.createForm(request);
-    }
-
     @PostMapping(path = "/submit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public SafetyFormResponse submitSafetyForm(
@@ -49,13 +47,15 @@ public class SafetyFormController {
             HttpServletRequest request) {
         return safetyFormService.submitForm(
                 submission,
-                requireUserId(request),
+                SessionUser.requireUserId(request),
                 photos == null ? List.of() : photos);
     }
 
     @GetMapping("/{formId}")
-    public SafetyFormResponse getSafetyForm(@PathVariable Integer formId) {
-        return safetyFormService.getForm(formId);
+    public SafetyFormResponse getSafetyForm(
+            @PathVariable Integer formId,
+            HttpServletRequest request) {
+        return safetyFormService.getForm(formId, SessionUser.requireUserId(request));
     }
 
     @GetMapping
@@ -67,8 +67,27 @@ public class SafetyFormController {
                     LocalDate startDate,
             @RequestParam(name = "end_date", required = false)
                     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-                    LocalDate endDate) {
-        return safetyFormService.getForms(siteId, userId, startDate, endDate);
+                    LocalDate endDate,
+            @RequestParam(name = "time_zone", required = false) String timeZone,
+            HttpServletRequest request) {
+        return safetyFormService.getForms(
+                SessionUser.requireUserId(request),
+                siteId,
+                userId,
+                startDate,
+                endDate,
+                parseZone(timeZone));
+    }
+
+    @PatchMapping("/{formId}/status")
+    public SafetyFormResponse updateStatus(
+            @PathVariable Integer formId,
+            @Valid @RequestBody SubmissionStatusRequest status,
+            HttpServletRequest request) {
+        return safetyFormService.updateStatus(
+                formId,
+                SessionUser.requireUserId(request),
+                status.status());
     }
 
     @PostMapping("/{formId}/photos/upload")
@@ -77,24 +96,25 @@ public class SafetyFormController {
             @PathVariable Integer formId,
             @RequestParam("photos") List<MultipartFile> photos,
             HttpServletRequest request) {
-        return safetyFormService.uploadPhotos(formId, requireUserId(request), photos);
+        return safetyFormService.uploadPhotos(formId, SessionUser.requireUserId(request), photos);
     }
 
     @GetMapping("/{formId}/photos")
     public List<PhotoResponse> getPhotos(
             @PathVariable Integer formId,
             HttpServletRequest request) {
-        return safetyFormService.getPhotos(formId, requireUserId(request));
+        return safetyFormService.getPhotos(formId, SessionUser.requireUserId(request));
     }
 
-    private Integer requireUserId(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        Object userId = session == null
-                ? null
-                : session.getAttribute(AuthController.USER_ID_SESSION_ATTRIBUTE);
-        if (!(userId instanceof Integer authenticatedUserId)) {
-            throw new AuthenticationException("Authentication required");
+    /** Calendar-date filters are interpreted in the caller's time zone (UTC when omitted). */
+    private ZoneId parseZone(String timeZone) {
+        if (timeZone == null || timeZone.isBlank()) {
+            return ZoneOffset.UTC;
         }
-        return authenticatedUserId;
+        try {
+            return ZoneId.of(timeZone);
+        } catch (DateTimeException exception) {
+            throw new InvalidRequestException("time_zone must be a valid IANA time zone");
+        }
     }
 }

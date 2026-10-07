@@ -12,5 +12,14 @@ public interface SiteRepository extends JpaRepository<Site, Integer> {
     List<Site> findByActiveTrueOrderByNameAsc();
 
     @EntityGraph(attributePaths = "checklist")
+    List<Site> findAllByOrderByNameAsc();
+
+    @EntityGraph(attributePaths = "checklist")
     Optional<Site> findOneById(Integer id);
+
+    boolean existsByNameIgnoreCase(String name);
+
+    boolean existsByNameIgnoreCaseAndIdNot(String name, Integer id);
+
+    long countByChecklist_Id(Integer checklistId);
 }

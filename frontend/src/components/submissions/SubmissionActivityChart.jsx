@@ -3,6 +3,7 @@ import {
   BarChart,
   CartesianGrid,
   ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
 } from 'recharts'
@@ -17,6 +18,29 @@ function ActivityXAxisTick({ x, y, payload }) {
         <tspan x="0" dy="15">{date}</tspan>
       </text>
     </g>
+  )
+}
+
+function ActivityTooltip({ active, payload }) {
+  if (!active || !payload?.length) return null
+
+  const day = payload[0].payload
+  return (
+    <div className="activity-tooltip">
+      <strong>{day.day}, {day.date}</strong>
+      {day.workers.length === 0 ? (
+        <span>No submissions</span>
+      ) : (
+        <ul>
+          {day.workers.map((worker) => (
+            <li key={worker.id}>
+              <span>{worker.name}</span>
+              <b>{worker.count}</b>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   )
 }
 
@@ -70,6 +94,11 @@ function SubmissionActivityChart({ activity }) {
             tickLine={false}
             ticks={activityTicks}
             width={44}
+          />
+          <Tooltip
+            content={<ActivityTooltip />}
+            cursor={false}
+            shared={false}
           />
           <Bar
             dataKey="count"

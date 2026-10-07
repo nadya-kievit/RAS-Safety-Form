@@ -2,11 +2,14 @@ package com.ras.safetyform.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import java.time.LocalDateTime;
+import jakarta.validation.constraints.Size;
+import java.time.Instant;
+import java.util.List;
 
 public record SafetyFormCreateRequest(
         @NotNull @Positive Integer userId,
         @NotNull @Positive Integer siteId,
-        @NotNull LocalDateTime formDate,
-        String notes) {
+        @NotNull Instant formDate,
+        String notes,
+        @NotNull @Size(max = 200) List<@NotNull Integer> checkedItemIds) {
 }

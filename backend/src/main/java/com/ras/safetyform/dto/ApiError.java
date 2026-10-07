@@ -1,10 +1,10 @@
 package com.ras.safetyform.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Map;
 
 public record ApiError(
-        LocalDateTime timestamp,
+        Instant timestamp,
         int status,
         String error,
         String message,

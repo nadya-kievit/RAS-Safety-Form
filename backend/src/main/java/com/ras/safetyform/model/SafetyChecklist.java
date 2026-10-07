@@ -21,11 +21,19 @@ public class SafetyChecklist {
     protected SafetyChecklist() {
     }
 
+    public SafetyChecklist(String name) {
+        this.name = name;
+    }
+
     public Integer getId() {
         return id;
     }
 
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

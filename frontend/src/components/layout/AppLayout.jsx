@@ -190,6 +190,7 @@ function AppLayout() {
                 Submissions
               </NavLink>
               <NavLink to="/admin/users">Manage Users</NavLink>
+              <NavLink to="/admin/sites">Manage Sites</NavLink>
               <NavLink to="/admin/profile">My Account</NavLink>
             </>
           )}

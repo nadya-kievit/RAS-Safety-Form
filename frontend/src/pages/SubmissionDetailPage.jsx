@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Check, ChevronRight } from 'lucide-react'
 import { useAuth } from '../context/auth.js'
-import { getSubmissionDetail } from '../services/submissionService.js'
+import { getSubmissionDetail, setSubmissionStatus } from '../services/submissionService.js'
 import { formatDateTime } from '../utils/date.js'
 
 function SubmissionDetailPage() {
@@ -11,6 +11,8 @@ function SubmissionDetailPage() {
   const [submission, setSubmission] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [statusError, setStatusError] = useState('')
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
 
   useEffect(() => {
     let ignore = false
@@ -31,6 +33,20 @@ function SubmissionDetailPage() {
       })
     return () => { ignore = true }
   }, [submissionId, user.id, user.role])
+
+  async function handleStatusChange() {
+    const nextStatus = submission.status === 'reviewed' ? 'submitted' : 'reviewed'
+    setStatusError('')
+    setIsUpdatingStatus(true)
+    try {
+      const updated = await setSubmissionStatus(submission.id, nextStatus)
+      setSubmission((current) => ({ ...current, status: updated.status }))
+    } catch (requestError) {
+      setStatusError(requestError.message || 'Could not update the status.')
+    } finally {
+      setIsUpdatingStatus(false)
+    }
+  }
 
   const backPath = user.role === 'admin' ? '/admin' : '/framer/submissions'
 
@@ -65,7 +81,26 @@ function SubmissionDetailPage() {
         <dd>{formatDateTime(submission.formDate)}</dd>
         <dt>Submitted by</dt>
         <dd>{submission.user?.firstName} {submission.user?.lastName}</dd>
+        <dt>Status</dt>
+        <dd className="submission-status">
+          <span className={`status-badge ${submission.status === 'reviewed' ? 'active' : ''}`}>
+            {submission.status === 'reviewed' ? 'Reviewed' : 'Submitted'}
+          </span>
+          {user.role === 'admin' && (
+            <button
+              className="secondary compact-button"
+              type="button"
+              onClick={handleStatusChange}
+              disabled={isUpdatingStatus}
+            >
+              {isUpdatingStatus
+                ? 'Updating...'
+                : submission.status === 'reviewed' ? 'Mark as submitted' : 'Mark as reviewed'}
+            </button>
+          )}
+        </dd>
       </dl>
+      {statusError && <p className="message error" role="alert">{statusError}</p>}
 
       <section className="panel checklist-panel">
         <h2>Safety checklist</h2>

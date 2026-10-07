@@ -1,6 +1,6 @@
 package com.ras.safetyform.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record UserResponse(
         Integer id,
@@ -10,5 +10,5 @@ public record UserResponse(
         String role,
         boolean mustChangePassword,
         boolean active,
-        LocalDateTime createdAt) {
+        Instant createdAt) {
 }

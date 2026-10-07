@@ -33,6 +33,15 @@ public class UserService {
         return toUserResponse(findUser(userId));
     }
 
+    /** A user may read their own record; administrators may read any record. */
+    @Transactional(readOnly = true)
+    public UserResponse getUserForViewer(Integer userId, Integer viewerId) {
+        if (!userId.equals(viewerId)) {
+            requireAdmin(viewerId);
+        }
+        return toUserResponse(findUser(userId));
+    }
+
     @Transactional(readOnly = true)
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll().stream()

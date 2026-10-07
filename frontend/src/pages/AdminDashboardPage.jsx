@@ -3,6 +3,7 @@ import { ChevronDown, ChevronRight, SlidersHorizontal } from 'lucide-react'
 import SubmissionList from '../components/submissions/SubmissionList.jsx'
 import { getActiveSites } from '../services/siteService.js'
 import { getAllSubmissions } from '../services/submissionService.js'
+import { getUsers } from '../services/userService.js'
 
 const emptyFilters = { siteId: '', userId: '', startDate: '', endDate: '' }
 const SubmissionActivityChart = lazy(() => (
@@ -27,21 +28,21 @@ function AdminDashboardPage() {
 
   useEffect(() => {
     let ignore = false
-    Promise.all([getAllSubmissions(), getActiveSites()])
-      .then(([submissionResult, siteResult]) => {
+    Promise.all([getAllSubmissions(), getActiveSites(), getUsers()])
+      .then(([submissionResult, siteResult, userResult]) => {
         if (ignore) return
         setSubmissions(submissionResult)
         setSites(siteResult)
-        const uniqueWorkers = new Map()
-        submissionResult.forEach((submission) => {
-          if (submission.user) uniqueWorkers.set(submission.user.id, submission.user)
-        })
-        setWorkers(Array.from(uniqueWorkers.values()).sort((a, b) =>
-          `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`),
-        ))
+        setWorkers(userResult
+          .filter((worker) => worker.active && worker.role === 'framer')
+          .sort((a, b) =>
+            `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`),
+          ))
       })
-      .catch(() => {
-        if (!ignore) setError('Could not load submissions.')
+      .catch((requestError) => {
+        if (!ignore) {
+          setError(requestError.message || 'Could not load submissions.')
+        }
       })
       .finally(() => {
         if (!ignore) setIsLoading(false)
@@ -50,40 +51,58 @@ function AdminDashboardPage() {
   }, [])
 
   const summary = useMemo(() => {
+    const activeWorkerIds = new Set(workers.map((worker) => worker.id))
+    const activeSiteIds = new Set(sites.map((site) => site.id))
     const workerIds = new Set()
     const siteIds = new Set()
     submissions.forEach((submission) => {
-      if (submission.userId) workerIds.add(submission.userId)
-      if (submission.siteId) siteIds.add(submission.siteId)
+      if (activeWorkerIds.has(submission.userId)) workerIds.add(submission.userId)
+      if (activeSiteIds.has(submission.siteId)) siteIds.add(submission.siteId)
     })
     return {
       submissions: submissions.length,
       workers: workerIds.size,
       sites: siteIds.size,
     }
-  }, [submissions])
+  }, [sites, submissions, workers])
 
   const activity = useMemo(() => {
     const endDate = new Date()
     endDate.setHours(0, 0, 0, 0)
-    const counts = new Map()
+    const dailyActivity = new Map()
     submissions.forEach((submission) => {
       if (!submission.formDate) return
       const key = localDateKey(submission.formDate)
-      counts.set(key, (counts.get(key) || 0) + 1)
+      const day = dailyActivity.get(key) || { count: 0, workers: new Map() }
+      const workerId = submission.userId || `unknown-${submission.id}`
+      const workerName = [submission.user?.firstName, submission.user?.lastName]
+        .filter(Boolean)
+        .join(' ') || 'Unknown worker'
+      const worker = day.workers.get(workerId) || {
+        id: workerId,
+        name: workerName,
+        count: 0,
+      }
+      worker.count += 1
+      day.count += 1
+      day.workers.set(workerId, worker)
+      dailyActivity.set(key, day)
     })
 
     return Array.from({ length: 7 }, (_, index) => {
       const date = new Date(endDate)
       date.setDate(endDate.getDate() - 6 + index)
+      const key = localDateKey(date)
+      const dayActivity = dailyActivity.get(key)
       return {
-        key: localDateKey(date),
+        key,
         day: new Intl.DateTimeFormat(undefined, { weekday: 'short' }).format(date),
         date: new Intl.DateTimeFormat(undefined, {
           month: 'short',
           day: 'numeric',
         }).format(date),
-        count: counts.get(localDateKey(date)) || 0,
+        count: dayActivity?.count || 0,
+        workers: Array.from(dayActivity?.workers.values() || []),
       }
     })
   }, [submissions])
@@ -97,8 +116,8 @@ function AdminDashboardPage() {
     setError('')
     try {
       setSubmissions(await getAllSubmissions(nextFilters))
-    } catch {
-      setError('Could not load filtered submissions.')
+    } catch (requestError) {
+      setError(requestError.message || 'Could not load filtered submissions.')
     } finally {
       setIsLoading(false)
     }
@@ -208,11 +227,17 @@ function AdminDashboardPage() {
           <span>Submissions</span>
         </article>
         <article className="panel admin-total-card">
-          <strong>{summary.workers}</strong>
+          <strong>
+            {summary.workers}
+            <small>/{workers.length}</small>
+          </strong>
           <span>Workers</span>
         </article>
         <article className="panel admin-total-card">
-          <strong>{summary.sites}</strong>
+          <strong>
+            {summary.sites}
+            <small>/{sites.length}</small>
+          </strong>
           <span>Sites</span>
         </article>
       </section>

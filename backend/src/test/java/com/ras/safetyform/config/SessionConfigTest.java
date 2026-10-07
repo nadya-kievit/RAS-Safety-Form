@@ -14,7 +14,7 @@ class SessionConfigTest {
     void sessionCookiePersistsForThirtyDays() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
-        CookieSerializer serializer = new SessionConfig().cookieSerializer(false);
+        CookieSerializer serializer = new SessionConfig().cookieSerializer(false, "Lax");
 
         serializer.writeCookieValue(new CookieSerializer.CookieValue(
                 request,
@@ -34,7 +34,7 @@ class SessionConfigTest {
     void productionSessionCookieCanBeSecure() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
-        CookieSerializer serializer = new SessionConfig().cookieSerializer(true);
+        CookieSerializer serializer = new SessionConfig().cookieSerializer(true, "Lax");
 
         serializer.writeCookieValue(new CookieSerializer.CookieValue(
                 request,
@@ -42,5 +42,21 @@ class SessionConfigTest {
                 "session-id"));
 
         assertTrue(response.getHeader("Set-Cookie").contains("Secure"));
+    }
+
+    @Test
+    void sameSiteIsConfigurableForCrossSiteDeployments() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        CookieSerializer serializer = new SessionConfig().cookieSerializer(true, "None");
+
+        serializer.writeCookieValue(new CookieSerializer.CookieValue(
+                request,
+                response,
+                "session-id"));
+
+        String cookie = response.getHeader("Set-Cookie");
+        assertTrue(cookie.contains("SameSite=None"));
+        assertTrue(cookie.contains("Secure"));
     }
 }
