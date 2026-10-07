@@ -2,6 +2,15 @@ import { Link, useNavigate } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 import { formatDateTime } from '../../utils/date.js'
 
+function formatSubmittedParts(value) {
+  if (!value) return ['Not available', '']
+  const date = new Date(value)
+  return [
+    new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(date),
+    new Intl.DateTimeFormat(undefined, { timeStyle: 'short' }).format(date),
+  ]
+}
+
 function SubmissionList({ submissions, detailBasePath, showWorker = false }) {
   const navigate = useNavigate()
 
@@ -45,6 +54,7 @@ function SubmissionList({ submissions, detailBasePath, showWorker = false }) {
           {submissions.map((submission) => {
             const detailPath = `${detailBasePath}/${submission.id}`
             const accessibleLabel = `View submission from ${submission.user?.firstName || 'worker'} at ${submission.site?.name || `Site ${submission.siteId}`}`
+            const [submittedDate, submittedTime] = formatSubmittedParts(submission.submittedAt)
 
             return (
               <tr
@@ -64,7 +74,10 @@ function SubmissionList({ submissions, detailBasePath, showWorker = false }) {
                   <td>{submission.user?.firstName} {submission.user?.lastName}</td>
                 )}
                 <td>{submission.site?.name || `Site ${submission.siteId}`}</td>
-                <td>{formatDateTime(submission.submittedAt)}</td>
+                <td className="submission-date-time">
+                  <span>{submittedDate}</span>
+                  <span>{submittedTime}</span>
+                </td>
                 <td className="submission-table-action" aria-hidden="true">
                   <ChevronRight />
                 </td>

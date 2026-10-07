@@ -58,13 +58,6 @@ function ProfilePage() {
     setIsEditing(false)
   }
 
-  function cancelPasswordChange() {
-    setPasswords(emptyPasswords)
-    setPasswordError('')
-    setPasswordSuccess('')
-    setIsPasswordOpen(false)
-  }
-
   async function handleProfileSubmit(event) {
     event.preventDefault()
     setProfileError('')

@@ -33,7 +33,7 @@ function FramerHomePage() {
         <p className="message success" role="status">{location.state.message}</p>
       )}
       <div className="framer-welcome">
-        <p>Welcome back</p>
+        <p>Welcome back,</p>
         <h1 className="page-title">{user.firstName} {user.lastName}</h1>
       </div>
       <div className="framer-home-actions">

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ChevronDown, ChevronRight } from 'lucide-react'
+import { ChevronDown, ChevronRight, Plus } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/auth.js'
 import {
@@ -119,7 +119,8 @@ function AdminUsersPage() {
         </div>
         {!showCreateForm && (
           <button className="users-create-button" type="button" onClick={() => setShowCreateForm(true)}>
-            Create user
+            <Plus aria-hidden="true" />
+            <span>Create user</span>
           </button>
         )}
       </div>
@@ -213,49 +214,83 @@ function AdminUsersPage() {
       {!showCreateForm && isLoading && <p>Loading users...</p>}
       {!showCreateForm && !isLoading && users.length === 0 && !error && <p>No users found.</p>}
       {!showCreateForm && !isLoading && users.length > 0 && (
-        <div className="table-scroll data-table-card users-table-card">
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Username</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th><span className="sr-only">Actions</span></th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => {
-                const isCurrentUser = user.id === currentUser.id
-                return (
-                  <tr key={user.id}>
-                    <td>{user.firstName} {user.lastName}</td>
-                    <td>{user.username}{isCurrentUser ? ' (you)' : ''}</td>
-                    <td>{displayRole(user.role)}</td>
-                    <td>
-                      <span className={`status-badge ${user.active ? 'active' : 'inactive'}`}>
-                        {user.active ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
-                    <td>
+        <>
+          <div className="table-scroll data-table-card users-table-card">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Username</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th><span className="sr-only">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user) => {
+                  const isCurrentUser = user.id === currentUser.id
+                  return (
+                    <tr key={user.id}>
+                      <td>{user.firstName} {user.lastName}</td>
+                      <td>{user.username}{isCurrentUser ? ' (you)' : ''}</td>
+                      <td>{displayRole(user.role)}</td>
+                      <td>
+                        <span className={`status-badge ${user.active ? 'active' : 'inactive'}`}>
+                          {user.active ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          className="secondary compact-button user-status-button"
+                          type="button"
+                          onClick={() => handleActivation(user)}
+                          disabled={updatingUserId === user.id || isCurrentUser}
+                          title={isCurrentUser ? 'You cannot deactivate your own account' : undefined}
+                        >
+                          {updatingUserId === user.id
+                            ? 'Updating...'
+                            : user.active ? 'Deactivate' : 'Activate'}
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="users-card-list" role="list">
+            {users.map((user) => {
+              const isCurrentUser = user.id === currentUser.id
+              return (
+                <article className="user-card" key={user.id} role="listitem">
+                  <div className="user-card-identity">
+                    <strong>{user.firstName} {user.lastName}</strong>
+                    <span>{user.username}{isCurrentUser ? ' (you)' : ''}</span>
+                  </div>
+                  <div className="user-card-meta">
+                    <span>Role: {displayRole(user.role)}</span>
+                    <span className={`status-badge user-card-status ${user.active ? 'active' : 'inactive'}`}>
+                      {user.active ? 'Active' : 'Inactive'}
+                    </span>
+                    {!isCurrentUser && (
                       <button
-                        className="secondary compact-button user-status-button"
+                        className="user-card-action"
                         type="button"
                         onClick={() => handleActivation(user)}
-                        disabled={updatingUserId === user.id || isCurrentUser}
-                        title={isCurrentUser ? 'You cannot deactivate your own account' : undefined}
+                        disabled={updatingUserId === user.id}
                       >
                         {updatingUserId === user.id
                           ? 'Updating...'
                           : user.active ? 'Deactivate' : 'Activate'}
                       </button>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+                    )}
+                  </div>
+                </article>
+              )
+            })}
+          </div>
+        </>
       )}
     </section>
   )

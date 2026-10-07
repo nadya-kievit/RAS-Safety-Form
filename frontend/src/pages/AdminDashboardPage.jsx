@@ -1,10 +1,13 @@
-import { useEffect, useMemo, useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { ChevronDown, ChevronRight, SlidersHorizontal } from 'lucide-react'
 import SubmissionList from '../components/submissions/SubmissionList.jsx'
 import { getActiveSites } from '../services/siteService.js'
 import { getAllSubmissions } from '../services/submissionService.js'
 
 const emptyFilters = { siteId: '', userId: '', startDate: '', endDate: '' }
+const SubmissionActivityChart = lazy(() => (
+  import('../components/submissions/SubmissionActivityChart.jsx')
+))
 
 function localDateKey(value) {
   const date = new Date(value)
@@ -12,11 +15,21 @@ function localDateKey(value) {
   return new Date(date.getTime() - offset).toISOString().slice(0, 10)
 }
 
+function formatFilterDate(value) {
+  if (!value) return 'Any'
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+  }).format(new Date(`${value}T00:00:00`))
+}
+
 function AdminDashboardPage() {
   const [submissions, setSubmissions] = useState([])
   const [sites, setSites] = useState([])
   const [workers, setWorkers] = useState([])
   const [filters, setFilters] = useState(emptyFilters)
+  const [areFiltersOpen, setAreFiltersOpen] = useState(false)
+  const [showAllRecords, setShowAllRecords] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -83,7 +96,11 @@ function AdminDashboardPage() {
     })
   }, [submissions])
 
-  const activityMaximum = Math.max(...activity.map((day) => day.count), 10)
+  const selectedSite = sites.find((site) => String(site.id) === String(filters.siteId))
+  const selectedWorker = workers.find((worker) => String(worker.id) === String(filters.userId))
+  const dateSummary = filters.startDate || filters.endDate
+    ? `${formatFilterDate(filters.startDate)} - ${formatFilterDate(filters.endDate)}`
+    : 'All dates'
 
   function updateFilter(name, value) {
     setFilters((current) => ({ ...current, [name]: value }))
@@ -103,6 +120,7 @@ function AdminDashboardPage() {
 
   function handleFilter(event) {
     event.preventDefault()
+    setAreFiltersOpen(false)
     loadFilteredSubmissions(filters)
   }
 
@@ -117,8 +135,28 @@ function AdminDashboardPage() {
         <h1 className="page-title">Submissions</h1>
       </div>
 
-      <form className="panel admin-filter-grid" onSubmit={handleFilter}>
-        <div className="field-group">
+      <section className={`admin-filter-panel${areFiltersOpen ? ' is-open' : ''}`}>
+        <button
+          className="admin-filter-toggle"
+          type="button"
+          aria-expanded={areFiltersOpen}
+          aria-controls="admin-filters"
+          onClick={() => setAreFiltersOpen((current) => !current)}
+        >
+          <SlidersHorizontal aria-hidden="true" />
+          <span>Filters</span>
+          <ChevronDown className="admin-filter-toggle-chevron" aria-hidden="true" />
+        </button>
+        <p className="admin-filter-summary">
+          <span>Site: {selectedSite?.name || 'All sites'}</span>
+          <span>Worker: {selectedWorker
+            ? `${selectedWorker.firstName} ${selectedWorker.lastName}`
+            : 'All workers'}</span>
+          <span>Date: {dateSummary}</span>
+        </p>
+
+        <form id="admin-filters" className="panel admin-filter-grid" onSubmit={handleFilter}>
+          <div className="field-group">
           <label htmlFor="filter-site">Site</label>
           <div className="admin-select-control">
             <select
@@ -133,9 +171,9 @@ function AdminDashboardPage() {
             </select>
             <ChevronDown aria-hidden="true" />
           </div>
-        </div>
+          </div>
 
-        <div className="field-group">
+          <div className="field-group">
           <label htmlFor="filter-worker">Worker</label>
           <div className="admin-select-control">
             <select
@@ -152,9 +190,9 @@ function AdminDashboardPage() {
             </select>
             <ChevronDown aria-hidden="true" />
           </div>
-        </div>
+          </div>
 
-        <div className="field-group">
+          <div className="field-group">
           <label htmlFor="start-date">Start date</label>
           <input
             id="start-date"
@@ -162,9 +200,9 @@ function AdminDashboardPage() {
             value={filters.startDate}
             onChange={(event) => updateFilter('startDate', event.target.value)}
           />
-        </div>
+          </div>
 
-        <div className="field-group">
+          <div className="field-group">
           <label htmlFor="end-date">End date</label>
           <input
             id="end-date"
@@ -172,15 +210,16 @@ function AdminDashboardPage() {
             value={filters.endDate}
             onChange={(event) => updateFilter('endDate', event.target.value)}
           />
-        </div>
+          </div>
 
-        <div className="form-actions">
-          <button type="submit" disabled={isLoading}>Apply filters</button>
-          <button type="button" className="secondary" onClick={handleReset} disabled={isLoading}>
-            Reset
-          </button>
-        </div>
-      </form>
+          <div className="form-actions">
+            <button type="submit" disabled={isLoading}>Apply filters</button>
+            <button type="button" className="secondary" onClick={handleReset} disabled={isLoading}>
+              Reset
+            </button>
+          </div>
+        </form>
+      </section>
 
       {error && <p className="message error" role="alert">{error}</p>}
 
@@ -201,35 +240,28 @@ function AdminDashboardPage() {
 
       <section className="panel admin-activity" aria-labelledby="activity-heading">
         <h2 id="activity-heading">Submission activity</h2>
-        <div className="activity-chart">
-          <span className="activity-axis-title">Submissions</span>
-          <div className="activity-plot">
-            <div className="activity-y-ticks" aria-hidden="true">
-              {[1, .8, .6, .4, .2, 0].map((ratio) => (
-                <span key={ratio}>{Math.round(activityMaximum * ratio)}</span>
-              ))}
-            </div>
-            <div className="activity-bars">
-              {activity.map((day) => (
-                <div className="activity-day" key={day.key}>
-                  <div className="activity-bar-space">
-                    <span
-                      className="activity-bar"
-                      style={{ height: `${(day.count / activityMaximum) * 100}%` }}
-                      title={`${day.count} submissions`}
-                    />
-                  </div>
-                  <span>{day.day}</span>
-                  <span>{day.date}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <Suspense fallback={<div className="activity-chart activity-chart-loading">Loading chart...</div>}>
+          <SubmissionActivityChart activity={activity} />
+        </Suspense>
       </section>
 
-      <section className="admin-records" aria-labelledby="records-heading">
-        <h2 id="records-heading">Submission records</h2>
+      <section
+        className={`admin-records${showAllRecords ? ' show-all-records' : ''}`}
+        aria-labelledby="records-heading"
+      >
+        <div className="admin-records-heading">
+          <h2 id="records-heading">Submission records</h2>
+          {submissions.length > 3 && (
+            <button
+              className="admin-records-view-all"
+              type="button"
+              onClick={() => setShowAllRecords((current) => !current)}
+            >
+              {showAllRecords ? 'Show less' : 'View all'}
+              <ChevronRight aria-hidden="true" />
+            </button>
+          )}
+        </div>
         {isLoading && <p className="empty-state">Loading...</p>}
         {!isLoading && !error && (
           <SubmissionList
