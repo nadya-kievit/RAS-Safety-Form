@@ -99,6 +99,7 @@ function RequiredPasswordChangePage() {
             onChange={updateField}
             required
           />
+          <PasswordRequirements />
         </div>
 
         <div className="field-group">
@@ -115,18 +116,8 @@ function RequiredPasswordChangePage() {
           />
         </div>
 
-        <PasswordRequirements />
-
         <button type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Updating...' : 'Update password'}
-        </button>
-        <button
-          className="required-password-signout"
-          type="button"
-          onClick={handleSignOut}
-          disabled={isSubmitting}
-        >
-          Sign out
         </button>
       </form>
     </main>

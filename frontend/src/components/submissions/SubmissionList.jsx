@@ -15,7 +15,7 @@ function SubmissionList({ submissions, detailBasePath, showWorker = false }) {
   const navigate = useNavigate()
 
   if (submissions.length === 0) {
-    return <p>No submissions found.</p>
+    return
   }
 
   if (!showWorker) {
@@ -25,7 +25,7 @@ function SubmissionList({ submissions, detailBasePath, showWorker = false }) {
           <div className="submission-list-row" key={submission.id}>
             <div>
               <h2>{submission.site?.name || `Site ${submission.siteId}`}</h2>
-              <p>{formatDateTime(submission.submittedAt)}</p>
+              <p>{formatDateTime(submission.formDate)}</p>
             </div>
             <Link
               className="recent-submission-link"
@@ -54,7 +54,7 @@ function SubmissionList({ submissions, detailBasePath, showWorker = false }) {
           {submissions.map((submission) => {
             const detailPath = `${detailBasePath}/${submission.id}`
             const accessibleLabel = `View submission from ${submission.user?.firstName || 'worker'} at ${submission.site?.name || `Site ${submission.siteId}`}`
-            const [submittedDate, submittedTime] = formatSubmittedParts(submission.submittedAt)
+            const [submittedDate, submittedTime] = formatSubmittedParts(submission.formDate)
 
             return (
               <tr

@@ -1,26 +1,21 @@
 import { apiRequest } from './api.js'
 import { mapChecklist, mapPhoto, mapSubmission } from './mappers.js'
 
-export async function createSafetyForm({ userId, siteId, formDate, notes }) {
-  const submission = await apiRequest('/safety-forms', {
-    method: 'POST',
-    body: JSON.stringify({
-      user_id: userId,
-      site_id: siteId,
-      form_date: formDate,
-      notes: notes || null,
-    }),
-  })
-  return mapSubmission(submission)
-}
-
-export async function uploadSubmissionPhotos(submissionId, files) {
+export async function submitSafetyForm({ userId, siteId, formDate, notes, photos }) {
   const formData = new FormData()
-  files.forEach((file) => formData.append('photos', file))
-  return apiRequest(`/safety-forms/${submissionId}/photos/upload`, {
+  formData.append('submission', new Blob([JSON.stringify({
+    user_id: userId,
+    site_id: siteId,
+    form_date: formDate,
+    notes: notes || null,
+  })], { type: 'application/json' }))
+  photos.forEach((file) => formData.append('photos', file))
+
+  const submission = await apiRequest('/safety-forms/submit', {
     method: 'POST',
     body: formData,
   })
+  return mapSubmission(submission)
 }
 
 export async function getUserSubmissions(userId) {

@@ -3,7 +3,9 @@ INSERT INTO users (
     last_name,
     username,
     password_hash,
-    role
+    role,
+    must_change_password,
+    active
 )
 VALUES
     (
@@ -11,21 +13,19 @@ VALUES
         'Framer',
         'framer',
         '$2a$10$tc65dJko2GSG46t1f5z9N.CSorMASMde.YVj6cFATl58wSoONxLF2',
-        'framer'
+        'framer',
+        FALSE,
+        TRUE
     ),
     (
         'Test',
         'Admin',
         'admin',
         '$2a$10$dZrbhITcuaNvz5WuR/fhbejpopKCZqZwwZAnCeNoz9Iz.fPZ8Mr8W',
-        'admin'
-    )
-ON CONFLICT (username) DO UPDATE
-SET
-    first_name = EXCLUDED.first_name,
-    last_name = EXCLUDED.last_name,
-    password_hash = EXCLUDED.password_hash,
-    role = EXCLUDED.role;
+        'admin',
+        FALSE,
+        TRUE
+    );
 
 
 INSERT INTO safety_checklists (name)

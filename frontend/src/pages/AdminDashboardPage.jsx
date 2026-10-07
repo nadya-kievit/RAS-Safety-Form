@@ -68,8 +68,8 @@ function AdminDashboardPage() {
     endDate.setHours(0, 0, 0, 0)
     const counts = new Map()
     submissions.forEach((submission) => {
-      if (!submission.submittedAt) return
-      const key = localDateKey(submission.submittedAt)
+      if (!submission.formDate) return
+      const key = localDateKey(submission.formDate)
       counts.set(key, (counts.get(key) || 0) + 1)
     })
 

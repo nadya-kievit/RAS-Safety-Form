@@ -4,6 +4,23 @@ export function todayInputValue() {
   return new Date(now.getTime() - offset).toISOString().slice(0, 10)
 }
 
+export function currentTimeInputValue() {
+  const now = new Date()
+  return [now.getHours(), now.getMinutes()]
+    .map((part) => String(part).padStart(2, '0'))
+    .join(':')
+}
+
+export function isFutureLocalDateTime(date, time) {
+  if (!date || !time) return false
+  return new Date(`${date}T${time}`).getTime() > Date.now()
+}
+
+export function toLocalDateTimeValue(date, time) {
+  if (!date || !time) return ''
+  return `${date}T${time}:00`
+}
+
 export function formatDate(value) {
   if (!value) return 'Not available'
   return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(

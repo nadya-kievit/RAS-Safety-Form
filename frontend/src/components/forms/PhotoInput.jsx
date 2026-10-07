@@ -1,3 +1,18 @@
+import { useEffect, useState } from 'react'
+
+function PhotoPreview({ file }) {
+  const [url] = useState(() => URL.createObjectURL(file))
+
+  useEffect(() => () => URL.revokeObjectURL(url), [url])
+
+  return (
+    <figure>
+      <img src={url} alt={`Preview of ${file.name}`} />
+      <figcaption>{file.name}</figcaption>
+    </figure>
+  )
+}
+
 function PhotoInput({ files, onChange }) {
   const allowedTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
   const maximumFileSize = 10 * 1024 * 1024
@@ -40,11 +55,14 @@ function PhotoInput({ files, onChange }) {
       />
       <small>Up to 5 JPEG, PNG, WebP, or GIF photos, 10 MB each.</small>
       {files.length > 0 && (
-        <ul className="compact-list">
+        <div className="photo-previews" aria-label="Selected photo previews">
           {files.map((file) => (
-            <li key={`${file.name}-${file.lastModified}`}>{file.name}</li>
+            <PhotoPreview
+              key={`${file.name}-${file.lastModified}`}
+              file={file}
+            />
           ))}
-        </ul>
+        </div>
       )}
     </div>
   )

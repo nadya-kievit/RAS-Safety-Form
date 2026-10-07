@@ -1,7 +1,7 @@
 package com.ras.safetyform.repository;
 
 import com.ras.safetyform.model.SafetyForm;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -25,12 +25,12 @@ public interface SafetyFormRepository extends JpaRepository<SafetyForm, Integer>
             WHERE (:siteId IS NULL OR form.site.id = :siteId)
               AND (:userId IS NULL OR form.user.id = :userId)
               AND (:startDate IS NULL OR form.formDate >= :startDate)
-              AND (:endDate IS NULL OR form.formDate <= :endDate)
+              AND (:endDateExclusive IS NULL OR form.formDate < :endDateExclusive)
             ORDER BY form.formDate DESC, form.submittedAt DESC
             """)
     List<SafetyForm> findAllFiltered(
             @Param("siteId") Integer siteId,
             @Param("userId") Integer userId,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate);
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDateExclusive") LocalDateTime endDateExclusive);
 }

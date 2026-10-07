@@ -22,8 +22,8 @@
   --radius-md: 6px;
 
   /* Typography */
-  --font-xs: .75rem;
-  --font-sm: .875rem;
+  --font-xs: .8125rem;
+  --font-sm: .9375rem;
   --font-base: 1rem;
   --font-lg: 1.125rem;
   --font-section-title: 1.25rem;
@@ -55,9 +55,7 @@ body {
   max-width: 100%;
   min-height: 100%;
   background-color: var(--color-brand);
-  overflow-x: hidden;
-  overscroll-behavior-x: none;
-  overscroll-behavior-y: none;
+  overflow-x: clip;
 }
 
 #root {
@@ -65,7 +63,7 @@ body {
   max-width: 100%;
   min-height: 100%;
   background-color: var(--color-brand);
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {
@@ -178,8 +176,7 @@ button:focus-visible,
   width: 100%;
   max-width: 100%;
   min-height: 100vh;
-  overflow-x: hidden;
-  touch-action: pan-y;
+  overflow-x: clip;
 }
 
 .branded-shell {
@@ -607,8 +604,13 @@ button:focus-visible,
   margin-bottom: 2rem;
 }
 
+.login-card .field-group > label {
+  font-size: 1.0625rem;
+}
+
 .login-card input {
   padding: 1rem 1.25rem;
+  font-size: 1.0625rem;
 }
 
 .login-card button[type="submit"] {
@@ -760,13 +762,16 @@ fieldset {
 
 .checkbox-list label {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: .6rem;
 }
 
 .checkbox-list input {
-  width: auto;
-  margin-top: .2rem;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  min-height: 0;
+  margin: 0;
 }
 
 .form-actions {
@@ -1005,6 +1010,12 @@ fieldset {
   gap: .7rem;
 }
 
+.form-date-time-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
 .form-page .field-group label,
 .form-page legend {
   font-size: var(--font-sm);
@@ -1064,6 +1075,33 @@ fieldset {
 .form-page .photo-upload-field small {
   color: var(--color-text-muted);
   font-size: var(--font-sm);
+}
+
+.photo-previews {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: var(--space-3);
+}
+
+.photo-previews figure {
+  min-width: 0;
+  margin: 0;
+}
+
+.photo-previews img {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.photo-previews figcaption {
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--font-sm);
+  overflow-wrap: anywhere;
 }
 
 .form-page textarea {
@@ -1541,6 +1579,33 @@ button.account-signout-button:active:not(:disabled) {
   background: var(--color-surface);
 }
 
+.notification-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.notification-banner button,
+.notification-banner button:hover:not(:disabled),
+.notification-banner button:active:not(:disabled) {
+  display: grid;
+  flex: 0 0 36px;
+  width: 36px;
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  color: currentColor;
+  background: transparent;
+  opacity: 1;
+  place-items: center;
+}
+
+.notification-banner button svg {
+  width: 20px;
+  height: 20px;
+}
+
 .compact-list {
   margin: .5rem 0;
   padding-left: 1.25rem;
@@ -1658,7 +1723,15 @@ button.account-signout-button:active:not(:disabled) {
 
   html,
   body {
+    overflow-x: clip;
+    overscroll-behavior-x: none;
     overscroll-behavior-y: none;
+  }
+
+  .app-shell,
+  .branded-shell {
+    overflow-x: clip;
+    touch-action: pan-y;
   }
 
   .pull-refresh-indicator {
@@ -2327,6 +2400,10 @@ button.account-signout-button:active:not(:disabled) {
 
   .form-page .field-group {
     min-width: 0;
+  }
+
+  .form-date-time-fields {
+    grid-template-columns: 1fr;
   }
 
   .form-page input[type="date"] {

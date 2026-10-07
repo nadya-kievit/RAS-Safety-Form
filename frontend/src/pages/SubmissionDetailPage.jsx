@@ -62,7 +62,7 @@ function SubmissionDetailPage() {
         <dt>Site</dt>
         <dd>{submission.site?.name || `Site ${submission.siteId}`}</dd>
         <dt>Submitted</dt>
-        <dd>{formatDateTime(submission.submittedAt)}</dd>
+        <dd>{formatDateTime(submission.formDate)}</dd>
         <dt>Submitted by</dt>
         <dd>{submission.user?.firstName} {submission.user?.lastName}</dd>
       </dl>

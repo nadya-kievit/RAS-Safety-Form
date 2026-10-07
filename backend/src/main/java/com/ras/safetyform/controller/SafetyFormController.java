@@ -12,12 +12,14 @@ import java.time.LocalDate;
 import java.util.List;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,6 +39,18 @@ public class SafetyFormController {
     public SafetyFormResponse createSafetyForm(
             @Valid @RequestBody SafetyFormCreateRequest request) {
         return safetyFormService.createForm(request);
+    }
+
+    @PostMapping(path = "/submit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public SafetyFormResponse submitSafetyForm(
+            @Valid @RequestPart("submission") SafetyFormCreateRequest submission,
+            @RequestPart(name = "photos", required = false) List<MultipartFile> photos,
+            HttpServletRequest request) {
+        return safetyFormService.submitForm(
+                submission,
+                requireUserId(request),
+                photos == null ? List.of() : photos);
     }
 
     @GetMapping("/{formId}")

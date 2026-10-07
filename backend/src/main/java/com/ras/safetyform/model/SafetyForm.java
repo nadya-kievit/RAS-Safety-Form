@@ -9,7 +9,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -29,7 +28,7 @@ public class SafetyForm {
     private Site site;
 
     @Column(name = "form_date", nullable = false)
-    private LocalDate formDate;
+    private LocalDateTime formDate;
 
     @Column(columnDefinition = "TEXT")
     private String notes;
@@ -37,25 +36,20 @@ public class SafetyForm {
     @Column(name = "submitted_at", nullable = false)
     private LocalDateTime submittedAt;
 
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
-
     protected SafetyForm() {
     }
 
     public SafetyForm(
             User user,
             Site site,
-            LocalDate formDate,
+            LocalDateTime formDate,
             String notes,
-            LocalDateTime submittedAt,
-            LocalDateTime updatedAt) {
+            LocalDateTime submittedAt) {
         this.user = user;
         this.site = site;
         this.formDate = formDate;
         this.notes = notes;
         this.submittedAt = submittedAt;
-        this.updatedAt = updatedAt;
     }
 
     public Integer getId() {
@@ -70,7 +64,7 @@ public class SafetyForm {
         return site;
     }
 
-    public LocalDate getFormDate() {
+    public LocalDateTime getFormDate() {
         return formDate;
     }
 
@@ -82,7 +76,4 @@ public class SafetyForm {
         return submittedAt;
     }
 
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
 }

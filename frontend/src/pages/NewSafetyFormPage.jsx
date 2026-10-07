@@ -1,30 +1,48 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import ChecklistFieldset from '../components/forms/ChecklistFieldset.jsx'
 import PhotoInput from '../components/forms/PhotoInput.jsx'
 import { useAuth } from '../context/auth.js'
 import { getActiveSites, getChecklistForSite } from '../services/siteService.js'
+import { submitSafetyForm } from '../services/submissionService.js'
 import {
-  createSafetyForm,
-  uploadSubmissionPhotos,
-} from '../services/submissionService.js'
-import { todayInputValue } from '../utils/date.js'
+  currentTimeInputValue,
+  isFutureLocalDateTime,
+  toLocalDateTimeValue,
+  todayInputValue,
+} from '../utils/date.js'
 
 function NewSafetyFormPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [date, setDate] = useState(todayInputValue)
+  const [time, setTime] = useState(currentTimeInputValue)
   const [siteId, setSiteId] = useState('')
   const [sites, setSites] = useState([])
   const [checklist, setChecklist] = useState(null)
   const [checkedIds, setCheckedIds] = useState(new Set())
   const [photos, setPhotos] = useState([])
+  const [photoError, setPhotoError] = useState('')
   const [notes, setNotes] = useState('')
   const [error, setError] = useState('')
   const [isLoadingSites, setIsLoadingSites] = useState(true)
   const [isLoadingChecklist, setIsLoadingChecklist] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const checklistRef = useRef(null)
+  const invalidScrollPending = useRef(false)
+
+  function moveTo(element) {
+    window.requestAnimationFrame(() => {
+      element?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      element?.focus?.({ preventScroll: true })
+    })
+  }
+
+  function showValidationError(message, element) {
+    setError(message)
+    moveTo(element)
+  }
 
   useEffect(() => {
     let ignore = false
@@ -81,6 +99,7 @@ function NewSafetyFormPage() {
 
   function handlePhotoChange(selectedFiles, validationError) {
     setPhotos(selectedFiles)
+    setPhotoError(validationError)
     setError(validationError)
   }
 
@@ -89,46 +108,55 @@ function NewSafetyFormPage() {
     setError('')
 
     if (!siteId || !checklist) {
-      setError('Select a site and load its checklist.')
+      showValidationError('Select a site and load its checklist.', document.getElementById('site'))
+      return
+    }
+
+    if (isFutureLocalDateTime(date, time)) {
+      showValidationError(
+        'The safety form date and time cannot be in the future.',
+        document.getElementById(date === todayInputValue() ? 'form-time' : 'form-date'),
+      )
+      return
+    }
+
+    if (photoError) {
+      showValidationError(photoError, document.getElementById('photos'))
       return
     }
 
     if (checklist.items.length === 0) {
-      setError('This site does not have a checklist configured.')
+      showValidationError('This site does not have a checklist configured.', checklistRef.current)
       return
     }
 
     if (checkedIds.size !== checklist.items.length) {
-      setError('Every checklist item must be confirmed before submission.')
+      showValidationError(
+        'Every checklist item must be confirmed before submission.',
+        checklistRef.current?.querySelector('input:not(:checked)'),
+      )
       return
     }
 
     setIsSubmitting(true)
     try {
-      const submission = await createSafetyForm({
+      await submitSafetyForm({
         userId: user.id,
         siteId: Number(siteId),
-        formDate: date,
+        formDate: toLocalDateTimeValue(date, time),
         notes,
+        photos,
       })
-
-      if (photos.length > 0) {
-        try {
-          await uploadSubmissionPhotos(submission.id, photos)
-        } catch (uploadError) {
-          throw new Error(
-            `The safety form was saved, but its photos could not be uploaded. ${uploadError.message}`,
-            { cause: uploadError },
-          )
-        }
-      }
 
       navigate('/framer', {
         replace: true,
         state: { message: 'Safety form submitted successfully.' },
       })
     } catch (requestError) {
-      setError(requestError.message || 'Could not submit the safety form.')
+      showValidationError(
+        requestError.message || 'Could not submit the safety form.',
+        document.querySelector('.form-page'),
+      )
     } finally {
       setIsSubmitting(false)
     }
@@ -139,16 +167,39 @@ function NewSafetyFormPage() {
       <h1 className="page-title">Safety Form</h1>
       {error && <p className="message error" role="alert">{error}</p>}
 
-      <form className="panel form-stack" onSubmit={handleSubmit}>
-        <div className="field-group">
-          <label htmlFor="form-date">Date</label>
-          <input
-            id="form-date"
-            type="date"
-            value={date}
-            onChange={(event) => setDate(event.target.value)}
-            required
-          />
+      <form
+        className="panel form-stack"
+        onSubmit={handleSubmit}
+        onInvalidCapture={(event) => {
+          if (invalidScrollPending.current) return
+          invalidScrollPending.current = true
+          moveTo(event.target)
+          window.setTimeout(() => { invalidScrollPending.current = false }, 300)
+        }}
+      >
+        <div className="form-date-time-fields">
+          <div className="field-group">
+            <label htmlFor="form-date">Date</label>
+            <input
+              id="form-date"
+              type="date"
+              value={date}
+              onChange={(event) => setDate(event.target.value)}
+              max={todayInputValue()}
+              required
+            />
+          </div>
+          <div className="field-group">
+            <label htmlFor="form-time">Time</label>
+            <input
+              id="form-time"
+              type="time"
+              value={time}
+              onChange={(event) => setTime(event.target.value)}
+              max={date === todayInputValue() ? currentTimeInputValue() : undefined}
+              required
+            />
+          </div>
         </div>
 
         <div className="field-group">
@@ -171,11 +222,13 @@ function NewSafetyFormPage() {
         </div>
 
         {isLoadingChecklist && <p>Loading checklist...</p>}
-        <ChecklistFieldset
-          checklist={checklist}
-          checkedIds={checkedIds}
-          onToggle={toggleChecklistItem}
-        />
+        <div ref={checklistRef}>
+          <ChecklistFieldset
+            checklist={checklist}
+            checkedIds={checkedIds}
+            onToggle={toggleChecklistItem}
+          />
+        </div>
 
         <PhotoInput files={photos} onChange={handlePhotoChange} />
 

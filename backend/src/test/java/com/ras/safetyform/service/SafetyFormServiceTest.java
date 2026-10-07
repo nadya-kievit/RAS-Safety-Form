@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.ras.safetyform.dto.PhotoResponse;
+import com.ras.safetyform.dto.SafetyFormCreateRequest;
 import com.ras.safetyform.model.Photo;
 import com.ras.safetyform.model.SafetyForm;
 import com.ras.safetyform.model.User;
@@ -21,6 +22,7 @@ import com.ras.safetyform.repository.SafetyFormRepository;
 import com.ras.safetyform.repository.SiteRepository;
 import com.ras.safetyform.repository.UserRepository;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -121,6 +123,29 @@ class SafetyFormServiceTest {
         assertThrows(
                 AuthorizationException.class,
                 () -> service.getPhotos(21, 8));
+    }
+
+    @Test
+    void rejectsFutureFormDateAndTimeBeforeSaving() {
+        SafetyFormCreateRequest request = new SafetyFormCreateRequest(
+                7,
+                3,
+                LocalDateTime.now().plusDays(1),
+                null);
+
+        assertThrows(InvalidRequestException.class, () -> service.createForm(request));
+
+        verify(formRepository, never()).saveAndFlush(any(SafetyForm.class));
+    }
+
+    @Test
+    void filtersThroughTheEntireSelectedEndDate() {
+        LocalDateTime startOfRange = LocalDateTime.of(2026, 10, 1, 0, 0);
+        LocalDateTime endExclusive = LocalDateTime.of(2026, 10, 8, 0, 0);
+
+        service.getForms(3, 7, startOfRange.toLocalDate(), endExclusive.minusDays(1).toLocalDate());
+
+        verify(formRepository).findAllFiltered(3, 7, startOfRange, endExclusive);
     }
 
     private MockMultipartFile png(String filename) {

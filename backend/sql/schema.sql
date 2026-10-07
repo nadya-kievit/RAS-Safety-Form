@@ -46,10 +46,9 @@ CREATE TABLE safety_forms (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL,
     site_id INTEGER NOT NULL,
-    form_date DATE NOT NULL,
+    form_date TIMESTAMP NOT NULL,
     notes TEXT,
     submitted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_safety_form_user
         FOREIGN KEY (user_id)

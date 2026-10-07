@@ -1,5 +1,5 @@
-import { Link, useLocation } from 'react-router-dom'
-import { FilePlus2, Files } from 'lucide-react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { FilePlus2, Files, X } from 'lucide-react'
 import { useAuth } from '../context/auth.js'
 import { useEffect, useState } from 'react'
 import { getUserSubmissions } from '../services/submissionService.js'
@@ -8,9 +8,16 @@ import { formatDateTime } from '../utils/date.js'
 function FramerHomePage() {
   const { user } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
+  const [notification, setNotification] = useState(location.state?.message || '')
   const [submissions, setSubmissions] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (!location.state?.message) return
+    navigate(location.pathname, { replace: true, state: null })
+  }, [location.pathname, location.state?.message, navigate])
 
   useEffect(() => {
     let ignore = false
@@ -29,8 +36,17 @@ function FramerHomePage() {
 
   return (
     <section className="framer-home">
-      {location.state?.message && (
-        <p className="message success" role="status">{location.state.message}</p>
+      {notification && (
+        <div className="message success notification-banner" role="status">
+          <span>{notification}</span>
+          <button
+            type="button"
+            aria-label="Close notification"
+            onClick={() => setNotification('')}
+          >
+            <X aria-hidden="true" />
+          </button>
+        </div>
       )}
       <div className="framer-welcome">
         <p>Welcome back,</p>
@@ -75,7 +91,7 @@ function FramerHomePage() {
               >
                 <div>
                   <h3>{submission.site?.name || `Site ${submission.siteId}`}</h3>
-                  <p>{formatDateTime(submission.submittedAt)}</p>
+                  <p>{formatDateTime(submission.formDate)}</p>
                 </div>
 
                 <Link

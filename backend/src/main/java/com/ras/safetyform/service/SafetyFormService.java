@@ -57,6 +57,27 @@ public class SafetyFormService {
 
     @Transactional
     public SafetyFormResponse createForm(SafetyFormCreateRequest request) {
+        validateFormDateTime(request);
+        return toFormResponse(saveForm(request));
+    }
+
+    @Transactional
+    public SafetyFormResponse submitForm(
+            SafetyFormCreateRequest request,
+            Integer authenticatedUserId,
+            List<MultipartFile> files) {
+        if (!request.userId().equals(authenticatedUserId)) {
+            throw new AuthorizationException("You can only submit safety forms for your own account");
+        }
+        validateFormDateTime(request);
+        SafetyForm form = saveForm(request);
+        if (files != null && !files.isEmpty()) {
+            storePhotos(form, files);
+        }
+        return toFormResponse(form);
+    }
+
+    private SafetyForm saveForm(SafetyFormCreateRequest request) {
         User user = userRepository.findById(request.userId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         Site site = siteRepository.findOneById(request.siteId())
@@ -67,9 +88,14 @@ public class SafetyFormService {
                 site,
                 request.formDate(),
                 request.notes(),
-                now,
                 now);
-        return toFormResponse(formRepository.save(form));
+        return formRepository.saveAndFlush(form);
+    }
+
+    private void validateFormDateTime(SafetyFormCreateRequest request) {
+        if (request.formDate().isAfter(LocalDateTime.now())) {
+            throw new InvalidRequestException("The safety form date and time cannot be in the future");
+        }
     }
 
     @Transactional(readOnly = true)
@@ -86,7 +112,11 @@ public class SafetyFormService {
         if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
             throw new InvalidRequestException("start_date must be on or before end_date");
         }
-        return formRepository.findAllFiltered(siteId, userId, startDate, endDate)
+        LocalDateTime startDateTime = startDate == null ? null : startDate.atStartOfDay();
+        LocalDateTime endDateExclusive = endDate == null
+                ? null
+                : endDate.plusDays(1).atStartOfDay();
+        return formRepository.findAllFiltered(siteId, userId, startDateTime, endDateExclusive)
                 .stream()
                 .map(this::toFormResponse)
                 .toList();
@@ -109,6 +139,13 @@ public class SafetyFormService {
             Integer viewerId,
             List<MultipartFile> files) {
         SafetyForm form = findFormForViewer(formId, viewerId);
+        return storePhotos(form, files);
+    }
+
+    private List<PhotoResponse> storePhotos(
+            SafetyForm form,
+            List<MultipartFile> files) {
+        Integer formId = form.getId();
         validatePhotoList(formId, files);
         List<String> uploadedPaths = new ArrayList<>();
 
@@ -289,7 +326,6 @@ public class SafetyFormService {
                 form.getFormDate(),
                 form.getNotes(),
                 form.getSubmittedAt(),
-                form.getUpdatedAt(),
                 userResponse,
                 siteResponse);
     }
