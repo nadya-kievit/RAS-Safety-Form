@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://YOUR-SERVICE-NAME.onrender.com/api/:path*"
+      "destination": "https://ras-safety-form.onrender.com/api/:path*"
     },
     {
       "source": "/((?!api/).*)",
