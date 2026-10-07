@@ -1286,6 +1286,7 @@ button.account-edit-button:hover:not(:disabled) {
   font-weight: 700;
   text-align: left;
   transition: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 button.account-password-toggle:hover:not(:disabled),
@@ -1299,6 +1300,32 @@ button.account-password-toggle:active:not(:disabled) {
   width: 1.15rem;
   height: 1.15rem;
   stroke-width: 2.25;
+  transition: transform .25s ease;
+}
+
+.account-password-toggle[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.account-password-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transition: grid-template-rows .28s ease, opacity .2s ease,
+    visibility 0s linear .28s;
+}
+
+.account-password-collapse.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.account-password-collapse-inner {
+  min-height: 0;
+  overflow: hidden;
 }
 
 .account-password-form {
@@ -1692,7 +1719,7 @@ button.account-signout-button:active:not(:disabled) {
     z-index: 20;
     top: 100%;
     left: 0;
-    display: none;
+    display: flex;
     align-items: stretch;
     flex-direction: column;
     width: min(220px, calc(100vw - 1rem));
@@ -1702,10 +1729,21 @@ button.account-signout-button:active:not(:disabled) {
     gap: 0;
     overflow: hidden;
     background: var(--color-surface);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-.5rem) scaleY(.96);
+    transform-origin: top left;
+    visibility: hidden;
+    transition: opacity .2s ease, transform .24s ease,
+      visibility 0s linear .24s;
   }
 
   .primary-nav.is-open {
-    display: flex;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scaleY(1);
+    visibility: visible;
+    transition-delay: 0s;
   }
 
   .primary-nav a {
@@ -1867,14 +1905,19 @@ button.account-signout-button:active:not(:disabled) {
   }
 
   .admin-filter-panel .admin-filter-grid {
-    display: none;
+    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    padding: 1rem;
+    max-height: 0;
+    padding: 0 1rem;
     border: 0;
-    border-top: 1px solid var(--color-border);
     border-radius: 0;
     margin: 0;
     background: transparent;
+    opacity: 0;
+    overflow: hidden;
+    visibility: hidden;
+    transition: max-height .5s ease, padding .5s ease, opacity .3s ease,
+      visibility 0s linear .5s;
   }
 
   .admin-filter-panel {
@@ -1887,7 +1930,11 @@ button.account-signout-button:active:not(:disabled) {
   }
 
   .admin-filter-panel.is-open .admin-filter-grid {
-    display: grid;
+    max-height: 640px;
+    padding: 1rem;
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
   }
 
   .admin-filter-toggle {
@@ -1904,12 +1951,14 @@ button.account-signout-button:active:not(:disabled) {
     background: transparent;
     font-size: 1.2rem;
     text-align: left;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .admin-filter-toggle:hover:not(:disabled),
   .admin-filter-toggle:active:not(:disabled) {
     border: 0;
     background: transparent;
+    opacity: 1;
   }
 
   .admin-filter-toggle svg {
@@ -1934,6 +1983,12 @@ button.account-signout-button:active:not(:disabled) {
     gap: .2rem .65rem;
     color: var(--color-text-muted);
     font-size: .72rem;
+    max-height: 3rem;
+    opacity: 1;
+    overflow: hidden;
+    visibility: visible;
+    transition: max-height .22s ease, margin .22s ease, opacity .16s ease,
+      visibility 0s linear 0s;
   }
 
   .admin-filter-summary span + span::before {
@@ -1943,7 +1998,12 @@ button.account-signout-button:active:not(:disabled) {
   }
 
   .admin-filter-panel.is-open .admin-filter-summary {
-    display: none;
+    max-height: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition-delay: 0s, 0s, 0s, .22s;
   }
 
   .admin-filter-grid > .field-group:nth-child(-n + 2) {
@@ -2443,5 +2503,16 @@ button.account-signout-button:active:not(:disabled) {
 
   .recent-submission-row {
     align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .account-password-toggle svg,
+  .account-password-collapse,
+  .primary-nav,
+  .admin-filter-panel .admin-filter-grid,
+  .admin-filter-summary,
+  .admin-filter-toggle-chevron {
+    transition: none;
   }
 }

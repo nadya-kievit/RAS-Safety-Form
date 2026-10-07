@@ -19,11 +19,37 @@ function AppLayout() {
   const isPullingRef = useRef(false)
   const isRefreshingRef = useRef(false)
   const refreshTimerRef = useRef(null)
+  const menuButtonRef = useRef(null)
+  const menuRef = useRef(null)
   const isFramer = user.role === 'framer'
   const isFramerHome = isFramer && location.pathname === '/framer'
   const homePath = isFramer ? '/framer' : '/admin'
   const profilePath = isFramer ? '/framer/profile' : '/admin/profile'
   const isMenuOpen = menuPath === location.pathname
+
+  useEffect(() => {
+    if (!isMenuOpen) return undefined
+
+    function handleOutsidePointer(event) {
+      if (menuRef.current?.contains(event.target)
+          || menuButtonRef.current?.contains(event.target)) return
+      setMenuPath(null)
+    }
+
+    function handleEscape(event) {
+      if (event.key === 'Escape') {
+        setMenuPath(null)
+        menuButtonRef.current?.focus()
+      }
+    }
+
+    document.addEventListener('pointerdown', handleOutsidePointer)
+    document.addEventListener('keydown', handleEscape)
+    return () => {
+      document.removeEventListener('pointerdown', handleOutsidePointer)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isMenuOpen])
 
   useEffect(() => {
     const phoneQuery = window.matchMedia('(max-width: 600px)')
@@ -116,6 +142,7 @@ function AppLayout() {
     <div className="app-shell branded-shell">
       <header className="framer-site-header">
         <button
+          ref={menuButtonRef}
           className="mobile-menu-button"
           type="button"
           aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
@@ -136,6 +163,7 @@ function AppLayout() {
           <img src="/ras-logo.png" alt="RAS logo" className="header-logo" />
         </NavLink>
         <nav
+          ref={menuRef}
           id="primary-navigation"
           className={`primary-nav${isMenuOpen ? ' is-open' : ''}`}
           aria-label="Main navigation"

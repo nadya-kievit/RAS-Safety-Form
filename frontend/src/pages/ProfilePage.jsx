@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/auth.js'
 
@@ -190,66 +190,69 @@ function ProfilePage() {
           onClick={() => setIsPasswordOpen((current) => !current)}
         >
           <span>Password</span>
-          {isPasswordOpen
-            ? <ChevronUp aria-hidden="true" />
-            : <ChevronDown aria-hidden="true" />}
+          <ChevronDown aria-hidden="true" />
         </button>
 
-        {isPasswordOpen && (
-          <form
-            id="password-change-form"
-            className="account-password-form form-stack"
-            onSubmit={handlePasswordSubmit}
-          >
-            {passwordError && <p className="message error" role="alert">{passwordError}</p>}
-            {passwordSuccess && <p className="message success" role="status">{passwordSuccess}</p>}
+        <div
+          className={`account-password-collapse${isPasswordOpen ? ' is-open' : ''}`}
+          aria-hidden={!isPasswordOpen}
+        >
+          <div className="account-password-collapse-inner">
+            <form
+              id="password-change-form"
+              className="account-password-form form-stack"
+              onSubmit={handlePasswordSubmit}
+            >
+              {passwordError && <p className="message error" role="alert">{passwordError}</p>}
+              {passwordSuccess && <p className="message success" role="status">{passwordSuccess}</p>}
 
-            <div className="field-group">
-              <label htmlFor="current-password">Current password</label>
-              <input
-                id="current-password"
-                name="currentPassword"
-                type="password"
-                autoComplete="current-password"
-                value={passwords.currentPassword}
-                onChange={updatePasswordField}
-                required
-              />
-            </div>
-            <div className="field-group">
-              <label htmlFor="new-password">New password</label>
-              <input
-                id="new-password"
-                name="newPassword"
-                type="password"
-                autoComplete="new-password"
-                value={passwords.newPassword}
-                onChange={updatePasswordField}
-                minLength="8"
-                required
-              />
-            </div>
-            <div className="field-group">
-              <label htmlFor="confirm-new-password">Confirm new password</label>
-              <input
-                id="confirm-new-password"
-                name="confirmNewPassword"
-                type="password"
-                autoComplete="new-password"
-                value={passwords.confirmNewPassword}
-                onChange={updatePasswordField}
-                minLength="8"
-                required
-              />
-            </div>
+              <div className="field-group">
+                <label htmlFor="current-password">Current password</label>
+                <input
+                  id="current-password"
+                  name="currentPassword"
+                  type="password"
+                  autoComplete="current-password"
+                  value={passwords.currentPassword}
+                  onChange={updatePasswordField}
+                  required
+                />
+              </div>
+              <div className="field-group">
+                <label htmlFor="new-password">New password</label>
+                <input
+                  id="new-password"
+                  name="newPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  value={passwords.newPassword}
+                  onChange={updatePasswordField}
+                  minLength="8"
+                  required
+                />
+              </div>
+              <div className="field-group">
+                <label htmlFor="confirm-new-password">Confirm new password</label>
+                <input
+                  id="confirm-new-password"
+                  name="confirmNewPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  value={passwords.confirmNewPassword}
+                  onChange={updatePasswordField}
+                  minLength="8"
+                  required
+                />
+              </div>
 
-            <div className="form-actions">
-              <button type="submit" disabled={isSavingPassword}>
-                {isSavingPassword ? 'Updating...' : 'Update password'}
-              </button>
-            </div>
-          </form>
-        )}
+              <div className="form-actions">
+                <button type="submit" disabled={isSavingPassword}>
+                  {isSavingPassword ? 'Updating...' : 'Update password'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
 
         <div className="account-footer">
           <button className="account-signout-button" type="button" onClick={handleLogout}>

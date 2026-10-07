@@ -15,14 +15,6 @@ function localDateKey(value) {
   return new Date(date.getTime() - offset).toISOString().slice(0, 10)
 }
 
-function formatFilterDate(value) {
-  if (!value) return 'Any'
-  return new Intl.DateTimeFormat(undefined, {
-    month: 'short',
-    day: 'numeric',
-  }).format(new Date(`${value}T00:00:00`))
-}
-
 function AdminDashboardPage() {
   const [submissions, setSubmissions] = useState([])
   const [sites, setSites] = useState([])
@@ -96,12 +88,6 @@ function AdminDashboardPage() {
     })
   }, [submissions])
 
-  const selectedSite = sites.find((site) => String(site.id) === String(filters.siteId))
-  const selectedWorker = workers.find((worker) => String(worker.id) === String(filters.userId))
-  const dateSummary = filters.startDate || filters.endDate
-    ? `${formatFilterDate(filters.startDate)} - ${formatFilterDate(filters.endDate)}`
-    : 'All dates'
-
   function updateFilter(name, value) {
     setFilters((current) => ({ ...current, [name]: value }))
   }
@@ -147,13 +133,6 @@ function AdminDashboardPage() {
           <span>Filters</span>
           <ChevronDown className="admin-filter-toggle-chevron" aria-hidden="true" />
         </button>
-        <p className="admin-filter-summary">
-          <span>Site: {selectedSite?.name || 'All sites'}</span>
-          <span>Worker: {selectedWorker
-            ? `${selectedWorker.firstName} ${selectedWorker.lastName}`
-            : 'All workers'}</span>
-          <span>Date: {dateSummary}</span>
-        </p>
 
         <form id="admin-filters" className="panel admin-filter-grid" onSubmit={handleFilter}>
           <div className="field-group">
