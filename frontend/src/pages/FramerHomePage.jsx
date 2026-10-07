@@ -47,7 +47,7 @@ function FramerHomePage() {
           </span>
         </Link>
         <Link className="framer-action" to="/framer/submissions">
-          <span className="framer-action-icon" aria-hidden="true">
+          <span className="framer-action-icon primary" aria-hidden="true">
             <Files />
           </span>
           <span className="framer-action-copy">

@@ -477,12 +477,6 @@ button:focus-visible,
   line-height: 1.35;
 }
 
-.framer-action:hover {
-  border-color: var(--color-border-strong);
-  color: var(--color-text);
-  background: var(--color-surface-muted);
-}
-
 .recent-submissions {
   margin-top: 2.7rem;
 }
