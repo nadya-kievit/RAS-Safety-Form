@@ -707,6 +707,51 @@ input:disabled {
   background: var(--color-surface-muted);
 }
 
+.password-input-control {
+  position: relative;
+  min-width: 0;
+}
+
+.password-input-control input {
+  padding-right: 3.25rem;
+}
+
+button.password-visibility-toggle {
+  position: absolute;
+  top: 50%;
+  right: .35rem;
+  display: grid;
+  width: 42px;
+  min-height: 42px;
+  padding: 0;
+  border: 0;
+  color: var(--color-text-muted);
+  background: transparent;
+  transform: translateY(-50%);
+  place-items: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button.password-visibility-toggle:hover:not(:disabled),
+button.password-visibility-toggle:active:not(:disabled) {
+  border: 0;
+  color: var(--color-text);
+  background: transparent;
+  opacity: 1;
+}
+
+.password-visibility-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+.password-requirements {
+  margin: -.25rem 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-sm);
+  line-height: 1.4;
+}
+
 fieldset {
   padding: var(--space-4);
   border: 1px solid var(--color-border-strong);
@@ -2125,6 +2170,10 @@ button.account-signout-button:active:not(:disabled) {
     padding: .9rem 1rem;
     border-bottom: 1px solid var(--color-border);
     column-gap: .75rem;
+  }
+
+  .admin-submissions-table tbody tr:hover td {
+    background: transparent;
   }
 
   .admin-submissions-table tbody tr:last-child {

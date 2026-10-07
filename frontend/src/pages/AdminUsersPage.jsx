@@ -1,18 +1,26 @@
 import { useEffect, useState } from 'react'
 import { ChevronDown, ChevronRight, Plus } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import PasswordInput from '../components/forms/PasswordInput.jsx'
+import PasswordRequirements from '../components/forms/PasswordRequirements.jsx'
 import { useAuth } from '../context/auth.js'
 import {
   createUser,
   getUsers,
   setUserActive,
 } from '../services/userService.js'
+import {
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  validateNewPassword,
+} from '../utils/password.js'
 
 const emptyUser = {
   firstName: '',
   lastName: '',
   username: '',
   password: '',
+  confirmPassword: '',
   role: 'framer',
 }
 
@@ -72,6 +80,16 @@ function AdminUsersPage() {
     event.preventDefault()
     setFormError('')
     setSuccess('')
+
+    const passwordError = validateNewPassword(
+      newUser.password,
+      newUser.confirmPassword,
+    )
+    if (passwordError) {
+      setFormError(passwordError)
+      return
+    }
+
     setIsCreating(true)
 
     try {
@@ -185,20 +203,35 @@ function AdminUsersPage() {
             </div>
           </div>
 
-          <div className="field-group">
-            <label htmlFor="new-user-password">Password</label>
-            <input
-              id="new-user-password"
-              name="password"
-              type="password"
-              autoComplete="new-password"
-              value={newUser.password}
-              onChange={updateField}
-              minLength="8"
-              maxLength="100"
-              required
-            />
+          <div className="two-column-form password-fields-grid">
+            <div className="field-group">
+              <label htmlFor="new-user-password">Temporary password</label>
+              <PasswordInput
+                id="new-user-password"
+                name="password"
+                autoComplete="new-password"
+                value={newUser.password}
+                onChange={updateField}
+                minLength={PASSWORD_MIN_LENGTH}
+                maxLength={PASSWORD_MAX_LENGTH}
+                required
+              />
+            </div>
+            <div className="field-group">
+              <label htmlFor="new-user-confirm-password">Confirm temporary password</label>
+              <PasswordInput
+                id="new-user-confirm-password"
+                name="confirmPassword"
+                autoComplete="new-password"
+                value={newUser.confirmPassword}
+                onChange={updateField}
+                minLength={PASSWORD_MIN_LENGTH}
+                maxLength={PASSWORD_MAX_LENGTH}
+                required
+              />
+            </div>
           </div>
+          <PasswordRequirements />
 
           <div className="form-actions">
             <button type="submit" disabled={isCreating}>

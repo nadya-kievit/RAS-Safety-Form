@@ -22,7 +22,10 @@ class UserServiceTest {
 
     private final UserRepository userRepository = mock(UserRepository.class);
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-    private final UserService userService = new UserService(userRepository, passwordEncoder);
+    private final UserService userService = new UserService(
+            userRepository,
+            passwordEncoder,
+            new PasswordPolicy());
 
     @Test
     void updateProfileChangesEditableFieldsAndPreservesRole() {
@@ -101,11 +104,11 @@ class UserServiceTest {
                 7,
                 new PasswordChangeRequest(
                         "old-password",
-                        "new-password",
-                        "new-password"));
+                        "strong-password1!",
+                        "strong-password1!"));
 
         verify(user).changePasswordHash(org.mockito.ArgumentMatchers.argThat(
-                hash -> passwordEncoder.matches("new-password", hash)));
+                hash -> passwordEncoder.matches("strong-password1!", hash)));
     }
 
     @Test
@@ -119,7 +122,8 @@ class UserServiceTest {
                         " New ",
                         " User ",
                         " new.user ",
-                        "temporary-password",
+                        "temporary-password1",
+                        "temporary-password1",
                         "framer"));
 
         assertEquals("new.user", response.username());
@@ -127,7 +131,7 @@ class UserServiceTest {
         assertEquals(true, response.mustChangePassword());
         assertEquals(true, response.active());
         verify(userRepository).save(org.mockito.ArgumentMatchers.argThat(user ->
-                passwordEncoder.matches("temporary-password", user.getPasswordHash())));
+                passwordEncoder.matches("temporary-password1", user.getPasswordHash())));
     }
 
     @Test

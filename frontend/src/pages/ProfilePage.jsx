@@ -1,7 +1,14 @@
 import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import PasswordInput from '../components/forms/PasswordInput.jsx'
+import PasswordRequirements from '../components/forms/PasswordRequirements.jsx'
 import { useAuth } from '../context/auth.js'
+import {
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  validateNewPassword,
+} from '../utils/password.js'
 
 const emptyPasswords = {
   currentPassword: '',
@@ -79,8 +86,12 @@ function ProfilePage() {
     setPasswordError('')
     setPasswordSuccess('')
 
-    if (passwords.newPassword !== passwords.confirmNewPassword) {
-      setPasswordError('New passwords do not match.')
+    const passwordError = validateNewPassword(
+      passwords.newPassword,
+      passwords.confirmNewPassword,
+    )
+    if (passwordError) {
+      setPasswordError(passwordError)
       return
     }
 
@@ -189,7 +200,7 @@ function ProfilePage() {
           aria-controls="password-change-form"
           onClick={() => setIsPasswordOpen((current) => !current)}
         >
-          <span>Password</span>
+          <span>Change Password</span>
           <ChevronDown aria-hidden="true" />
         </button>
 
@@ -208,10 +219,9 @@ function ProfilePage() {
 
               <div className="field-group">
                 <label htmlFor="current-password">Current password</label>
-                <input
+                <PasswordInput
                   id="current-password"
                   name="currentPassword"
-                  type="password"
                   autoComplete="current-password"
                   value={passwords.currentPassword}
                   onChange={updatePasswordField}
@@ -220,30 +230,32 @@ function ProfilePage() {
               </div>
               <div className="field-group">
                 <label htmlFor="new-password">New password</label>
-                <input
+                <PasswordInput
                   id="new-password"
                   name="newPassword"
-                  type="password"
                   autoComplete="new-password"
                   value={passwords.newPassword}
                   onChange={updatePasswordField}
-                  minLength="8"
+                  minLength={PASSWORD_MIN_LENGTH}
+                  maxLength={PASSWORD_MAX_LENGTH}
                   required
                 />
               </div>
               <div className="field-group">
                 <label htmlFor="confirm-new-password">Confirm new password</label>
-                <input
+                <PasswordInput
                   id="confirm-new-password"
                   name="confirmNewPassword"
-                  type="password"
                   autoComplete="new-password"
                   value={passwords.confirmNewPassword}
                   onChange={updatePasswordField}
-                  minLength="8"
+                  minLength={PASSWORD_MIN_LENGTH}
+                  maxLength={PASSWORD_MAX_LENGTH}
                   required
                 />
               </div>
+
+              <PasswordRequirements />
 
               <div className="form-actions">
                 <button type="submit" disabled={isSavingPassword}>

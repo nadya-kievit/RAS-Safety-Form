@@ -1,6 +1,13 @@
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
+import PasswordInput from '../components/forms/PasswordInput.jsx'
+import PasswordRequirements from '../components/forms/PasswordRequirements.jsx'
 import { useAuth } from '../context/auth.js'
+import {
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  validateNewPassword,
+} from '../utils/password.js'
 
 const emptyPasswords = {
   currentPassword: '',
@@ -36,8 +43,12 @@ function RequiredPasswordChangePage() {
     event.preventDefault()
     setError('')
 
-    if (passwords.newPassword !== passwords.confirmNewPassword) {
-      setError('New passwords do not match.')
+    const passwordError = validateNewPassword(
+      passwords.newPassword,
+      passwords.confirmNewPassword,
+    )
+    if (passwordError) {
+      setError(passwordError)
       return
     }
 
@@ -66,10 +77,9 @@ function RequiredPasswordChangePage() {
 
         <div className="field-group">
           <label htmlFor="current-password">Temporary password</label>
-          <input
+          <PasswordInput
             id="current-password"
             name="currentPassword"
-            type="password"
             autoComplete="current-password"
             value={passwords.currentPassword}
             onChange={updateField}
@@ -79,13 +89,12 @@ function RequiredPasswordChangePage() {
 
         <div className="field-group">
           <label htmlFor="new-password">New password</label>
-          <input
+          <PasswordInput
             id="new-password"
             name="newPassword"
-            type="password"
             autoComplete="new-password"
-            minLength={8}
-            maxLength={100}
+            minLength={PASSWORD_MIN_LENGTH}
+            maxLength={PASSWORD_MAX_LENGTH}
             value={passwords.newPassword}
             onChange={updateField}
             required
@@ -94,18 +103,19 @@ function RequiredPasswordChangePage() {
 
         <div className="field-group">
           <label htmlFor="confirm-new-password">Confirm new password</label>
-          <input
+          <PasswordInput
             id="confirm-new-password"
             name="confirmNewPassword"
-            type="password"
             autoComplete="new-password"
-            minLength={8}
-            maxLength={100}
+            minLength={PASSWORD_MIN_LENGTH}
+            maxLength={PASSWORD_MAX_LENGTH}
             value={passwords.confirmNewPassword}
             onChange={updateField}
             required
           />
         </div>
+
+        <PasswordRequirements />
 
         <button type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Updating...' : 'Update password'}

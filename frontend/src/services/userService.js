@@ -14,6 +14,7 @@ export async function createUser(user) {
       last_name: user.lastName,
       username: user.username,
       password: user.password,
+      confirm_password: user.confirmPassword,
       role: user.role,
     }),
   })

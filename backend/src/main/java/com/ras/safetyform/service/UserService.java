@@ -17,10 +17,15 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final PasswordPolicy passwordPolicy;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            PasswordPolicy passwordPolicy) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.passwordPolicy = passwordPolicy;
     }
 
     @Transactional(readOnly = true)
@@ -51,6 +56,10 @@ public class UserService {
         if (userRepository.existsByUsername(username)) {
             throw new InvalidRequestException("That username is already in use");
         }
+        if (!request.password().equals(request.confirmPassword())) {
+            throw new InvalidRequestException("Passwords do not match");
+        }
+        passwordPolicy.validate(request.password());
 
         User user = new User(
                 request.firstName().trim(),
@@ -102,6 +111,7 @@ public class UserService {
         if (passwordEncoder.matches(request.newPassword(), user.getPasswordHash())) {
             throw new InvalidRequestException("New password must be different from the current password");
         }
+        passwordPolicy.validate(request.newPassword());
 
         user.changePasswordHash(passwordEncoder.encode(request.newPassword()));
         return toUserResponse(user);

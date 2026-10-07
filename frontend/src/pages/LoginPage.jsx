@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
+import PasswordInput from '../components/forms/PasswordInput.jsx'
 import { useAuth } from '../context/auth.js'
 
 function LoginPage() {
@@ -63,10 +64,9 @@ function LoginPage() {
 
         <div className="field-group">
           <label htmlFor="password">Password</label>
-          <input
+          <PasswordInput
             id="password"
             name="password"
-            type="password"
             autoComplete="current-password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
